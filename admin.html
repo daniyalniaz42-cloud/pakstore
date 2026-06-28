@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PakStore - Secure Admin Control</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f1f5f9; padding-bottom: 5px; }
+        header { background: #0f172a; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+        .panel { background: white; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        h2 { font-size: 16px; margin-bottom: 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end; }
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        
+        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        button { border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-blue { background: #2563eb; color: white; padding: 9px 15px; font-size: 14px; }
+        .btn-red { background: #fee2e2; color: #dc2626; padding: 5px 10px; font-size: 12px; }
+
+        /* Tables styling */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        th { background: #f8fafc; color: #64748b; }
+        tr:hover { background: #f8fafc; }
+        .order-id { font-weight: bold; color: #2563eb; }
+        .cust-info b { color: #0f172a; font-size: 14px; }
+    </style>
+</head>
+<body onload="renderOrdersTable()">
+
+    <header>
+        <h1 style="font-size: 18px;">PakStore Admin Control Desk</h1>
+        <span style="font-size:12px; color:#4ade80;">● Offline Native Sync Active</span>
+    </header>
+
+    <main class="container">
+        
+        <!-- INPUT PRODUCT -->
+        <section class="panel">
+            <h2>Add New Product to Storefront</h2>
+            <form onsubmit="addNewProduct(event)" class="form-grid">
+                <div>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Product Name</span>
+                    <input type="text" id="p-name" required>
+                </div>
+                <div>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Price (Rs.)</span>
+                    <input type="number" id="p-price" required>
+                </div>
+                <div>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Specification / Details</span>
+                    <input type="text" id="p-desc" required>
+                </div>
+                <button type="submit" class="btn-blue">Publish</button>
+            </form>
+        </section>
+
+        <!-- LEDGER -->
+        <section class="panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h2 style="border:none; margin:0; padding:0;">Customer Orders Ledger</h2>
+                <button onclick="clearAllOrders()" class="btn-red">Delete All Data</button>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer Profile</th>
+                            <th>Items & Total Bill</th>
+                            <th>Status Control</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-orders-table">
+                        <!-- Data rows loads dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function renderOrdersTable() {
+            const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            const tbody = document.getElementById('admin-orders-table');
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">No orders received yet. Active syncing...</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(o => {
+                const itemsStr = o.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+                return `
+                    <tr>
+                        <td class="order-id">${o.id}<br><span style="font-size:11px; color:#aaa; font-weight:normal;">${o.date}</span></td>
+                        <td class="cust-info">
+                            <b>${o.name}</b><br>
+                            <span style="color:#475569;">${o.phone}</span><br>
+                            <span style="color:#64748b; font-size:12px;">${o.address}</span>
+                        </td>
+                        <td>
+                            <div style="color:#334155; font-size:12px; margin-bottom:4px;">${itemsStr}</div>
+                            <span style="font-weight:bold; font-size:14px; color:#0f172a;">${o.total}</span>
+                        </td>
+                        <td>
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:5px; font-weight:bold; width:130px;">
+                                <option value="Processing" ${o.status==='Processing'?'selected':''}>⏳ Processing</option>
+                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>🚚 Shipped</option>
+                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>✅ Delivered</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            let orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            orders = orders.map(o => {
+                if (o.id === orderId) o.status = newStatus;
+                return o;
+            });
+            localStorage.setItem('pakstore_orders', JSON.stringify(orders));
+            renderOrdersTable();
+        }
+
+        function addNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('p-name').value;
+            const price = parseInt(document.getElementById('p-price').value);
+            const desc = document.getElementById('p-desc').value;
+
+            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            products.push({ id: Date.now(), name, price, desc });
+            localStorage.setItem('pakstore_products', JSON.stringify(products));
+
+            alert(`Product "${name}" successfully listed!`);
+            document.querySelector('form').reset();
+        }
+
+        function clearAllOrders() {
+            if (confirm('Clean out entire customer database?')) {
+                localStorage.removeItem('pakstore_orders');
+                renderOrdersTable();
+            }
+        }
+    </script>
+</body>
+</html>
