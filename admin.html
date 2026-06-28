@@ -6,7 +6,7 @@
     <title>PakStore - Secure Admin Control</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f1f5f9; padding-bottom: 5px; }
+        body { background: #f1f5f9; padding-bottom: 40px; }
         header { background: #0f172a; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
         .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
         .panel { background: white; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -19,6 +19,8 @@
         button { border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         .btn-blue { background: #2563eb; color: white; padding: 9px 15px; font-size: 14px; }
         .btn-red { background: #fee2e2; color: #dc2626; padding: 5px 10px; font-size: 12px; }
+        .btn-delete-prod { background: #ef4444; color: white; padding: 4px 8px; font-size: 11px; border-radius: 4px; margin-top: 5px; display: inline-block; }
+        .btn-delete-prod:hover { background: #dc2626; }
 
         /* Tables styling */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
@@ -27,9 +29,13 @@
         tr:hover { background: #f8fafc; }
         .order-id { font-weight: bold; color: #2563eb; }
         .cust-info b { color: #0f172a; font-size: 14px; }
+        
+        /* Product List Grid in Admin */
+        .admin-prod-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+        .admin-prod-item { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; }
     </style>
 </head>
-<body onload="renderOrdersTable()">
+<body onload="loadAdminDashboard()">
 
     <header>
         <h1 style="font-size: 18px;">PakStore Admin Control Desk</h1>
@@ -38,7 +44,6 @@
 
     <main class="container">
         
-        <!-- INPUT PRODUCT -->
         <section class="panel">
             <h2>Add New Product to Storefront</h2>
             <form onsubmit="addNewProduct(event)" class="form-grid">
@@ -56,9 +61,12 @@
                 </div>
                 <button type="submit" class="btn-blue">Publish</button>
             </form>
+
+            <h3 style="font-size: 13px; margin-top: 25px; color: #475569; font-weight: bold;">Current Live Products:</h3>
+            <div id="admin-products-grid" class="admin-prod-list">
+                </div>
         </section>
 
-        <!-- LEDGER -->
         <section class="panel">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h2 style="border:none; margin:0; padding:0;">Customer Orders Ledger</h2>
@@ -76,14 +84,64 @@
                         </tr>
                     </thead>
                     <tbody id="admin-orders-table">
-                        <!-- Data rows loads dynamically -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
+        // Initial setup arrays
+        const defaultProducts = [
+            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium bass quality, 30 hours battery runtime, LCD case display." },
+            { id: 2, name: "20W Fast Charging Power Bank", price: 3200, desc: "10,000mAh mini battery pack. Pocket design with digital indicator." }
+        ];
+
+        function loadAdminDashboard() {
+            if (!localStorage.getItem('pakstore_products')) {
+                localStorage.setItem('pakstore_products', JSON.stringify(defaultProducts));
+            }
+            renderAdminProducts();
+            renderOrdersTable();
+        }
+
+        // Render products list with delete buttons
+        function renderAdminProducts() {
+            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            const grid = document.getElementById('admin-products-grid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = `<p style="color:#aaa; font-size:13px; grid-column: 1/-1;">No products active in store. Add above.</p>`;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => `
+                <div class="admin-prod-item">
+                    <div>
+                        <strong style="font-size:14px; color:#0f172a;">${p.name}</strong>
+                        <p style="font-size:11px; color:#64748b; margin: 3px 0;">${p.desc}</p>
+                        <span style="font-weight:bold; color:#2563eb; font-size:13px;">Rs. ${p.price}</span>
+                    </div>
+                    <div>
+                        <button onclick="deleteProduct(${p.id}, '${p.name}')" class="btn-delete-prod">❌ Delete Product</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete product function
+        function deleteProduct(prodId, prodName) {
+            if (confirm(`Are you sure you want to remove "${prodName}" from the store?`)) {
+                let products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+                products = products.filter(p => p.id !== prodId);
+                localStorage.setItem('pakstore_products', JSON.stringify(products));
+                
+                // Refresh views
+                renderAdminProducts();
+                alert(`"${prodName}" has been deleted.`);
+            }
+        }
+
         function renderOrdersTable() {
             const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
             const tbody = document.getElementById('admin-orders-table');
@@ -141,6 +199,7 @@
 
             alert(`Product "${name}" successfully listed!`);
             document.querySelector('form').reset();
+            renderAdminProducts(); // Refresh list immediately
         }
 
         function clearAllOrders() {
