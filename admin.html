@@ -12,34 +12,29 @@
         .panel { background: white; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         h2 { font-size: 16px; margin-bottom: 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
         
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: flex-end; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 12px; align-items: flex-end; }
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
         
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; background: white; }
         button { border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-blue { background: #2563eb; color: white; padding: 9px 15px; font-size: 14px; }
+        .btn-blue { background: #2563eb; color: white; padding: 10px 20px; font-size: 14px; }
         .btn-red { background: #fee2e2; color: #dc2626; padding: 5px 10px; font-size: 12px; }
-        .btn-delete-prod { background: #ef4444; color: white; padding: 4px 8px; font-size: 11px; border-radius: 4px; margin-top: 5px; display: inline-block; }
-        .btn-delete-prod:hover { background: #dc2626; }
+        .btn-delete-prod { background: #ef4444; color: white; padding: 5px 8px; font-size: 11px; border-radius: 4px; margin-top: 8px; }
 
-        /* Tables styling */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         th { background: #f8fafc; color: #64748b; }
-        tr:hover { background: #f8fafc; }
-        .order-id { font-weight: bold; color: #2563eb; }
-        .cust-info b { color: #0f172a; font-size: 14px; }
         
-        /* Product List Grid in Admin */
-        .admin-prod-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
-        .admin-prod-item { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; }
+        .admin-prod-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
+        .admin-prod-item { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .cat-tag { position: absolute; top: 8px; right: 8px; font-size: 10px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #475569;}
     </style>
 </head>
 <body onload="loadAdminDashboard()">
 
     <header>
         <h1 style="font-size: 18px;">PakStore Admin Control Desk</h1>
-        <span style="font-size:12px; color:#4ade80;">● Offline Native Sync Active</span>
+        <span style="font-size:12px; color:#4ade80;">● Online Native Sync Active</span>
     </header>
 
     <main class="container">
@@ -56,23 +51,36 @@
                     <input type="number" id="p-price" required>
                 </div>
                 <div>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Category</span>
+                    <select id="p-category">
+                        <option value="electronic">Electronics</option>
+                        <option value="fashion">Fashion</option>
+                        <option value="etc">General / Etc</option>
+                    </select>
+                </div>
+                <div>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Size Feature?</span>
+                    <select id="p-size-feature">
+                        <option value="no">No Size Needed</option>
+                        <option value="yes">Enable Sizes (S, M, L, XL)</option>
+                    </select>
+                </div>
+                <div style="grid-column: 1 / -1;">
                     <span style="font-size:11px; font-weight:bold; color:#64748b;">Specification / Details</span>
                     <input type="text" id="p-desc" required>
                 </div>
-                <button type="submit" class="btn-blue">Publish</button>
+                <button type="submit" class="btn-blue" style="grid-column: auto;">Publish</button>
             </form>
 
             <h3 style="font-size: 13px; margin-top: 25px; color: #475569; font-weight: bold;">Current Live Products:</h3>
-            <div id="admin-products-grid" class="admin-prod-list">
-                </div>
+            <div id="admin-products-grid" class="admin-prod-list"></div>
         </section>
 
         <section class="panel">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h2 style="border:none; margin:0; padding:0;">Customer Orders Ledger</h2>
+                <h2>Customer Orders Ledger</h2>
                 <button onclick="clearAllOrders()" class="btn-red">Delete All Data</button>
             </div>
-            
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
@@ -83,43 +91,36 @@
                             <th>Status Control</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-orders-table">
-                        </tbody>
+                    <tbody id="admin-orders-table"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
     <script>
-        // Initial setup arrays
-        const defaultProducts = [
-            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium bass quality, 30 hours battery runtime, LCD case display." },
-            { id: 2, name: "20W Fast Charging Power Bank", price: 3200, desc: "10,000mAh mini battery pack. Pocket design with digital indicator." }
-        ];
-
         function loadAdminDashboard() {
-            if (!localStorage.getItem('pakstore_products')) {
-                localStorage.setItem('pakstore_products', JSON.stringify(defaultProducts));
-            }
             renderAdminProducts();
             renderOrdersTable();
         }
 
-        // Render products list with delete buttons
         function renderAdminProducts() {
             const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
             const grid = document.getElementById('admin-products-grid');
             
             if (products.length === 0) {
-                grid.innerHTML = `<p style="color:#aaa; font-size:13px; grid-column: 1/-1;">No products active in store. Add above.</p>`;
+                grid.innerHTML = `<p style="color:#aaa; font-size:13px;">No products active.</p>`;
                 return;
             }
 
             grid.innerHTML = products.map(p => `
                 <div class="admin-prod-item">
+                    <span class="cat-tag">${p.category}</span>
                     <div>
                         <strong style="font-size:14px; color:#0f172a;">${p.name}</strong>
                         <p style="font-size:11px; color:#64748b; margin: 3px 0;">${p.desc}</p>
+                        <div style="font-size:11px; color:#e11d48; font-weight:bold; margin-bottom:4px;">
+                            ${p.hasSize === 'yes' ? '📏 Size Selection Active' : '📦 Standard Unit'}
+                        </div>
                         <span style="font-weight:bold; color:#2563eb; font-size:13px;">Rs. ${p.price}</span>
                     </div>
                     <div>
@@ -129,44 +130,48 @@
             `).join('');
         }
 
-        // Delete product function
+        function addNewProduct(e) {
+            e.preventDefault();
+            const name = document.getElementById('p-name').value;
+            const price = parseInt(document.getElementById('p-price').value);
+            const category = document.getElementById('p-category').value;
+            const hasSize = document.getElementById('p-size-feature').value;
+            const desc = document.getElementById('p-desc').value;
+
+            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            products.push({ id: Date.now(), name, price, category, hasSize, desc });
+            localStorage.setItem('pakstore_products', JSON.stringify(products));
+
+            alert(`Product "${name}" listed successfully!`);
+            document.querySelector('form').reset();
+            renderAdminProducts();
+        }
+
         function deleteProduct(prodId, prodName) {
-            if (confirm(`Are you sure you want to remove "${prodName}" from the store?`)) {
+            if (confirm(`Delete "${prodName}"?`)) {
                 let products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
                 products = products.filter(p => p.id !== prodId);
                 localStorage.setItem('pakstore_products', JSON.stringify(products));
-                
-                // Refresh views
                 renderAdminProducts();
-                alert(`"${prodName}" has been deleted.`);
             }
         }
 
         function renderOrdersTable() {
             const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
             const tbody = document.getElementById('admin-orders-table');
-            
             if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:#aaa;">No orders received yet. Active syncing...</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#aaa;">No orders yet.</td></tr>`;
                 return;
             }
-
             tbody.innerHTML = orders.map(o => {
                 const itemsStr = o.items.map(i => `${i.name} (x${i.qty})`).join(', ');
                 return `
                     <tr>
-                        <td class="order-id">${o.id}<br><span style="font-size:11px; color:#aaa; font-weight:normal;">${o.date}</span></td>
-                        <td class="cust-info">
-                            <b>${o.name}</b><br>
-                            <span style="color:#475569;">${o.phone}</span><br>
-                            <span style="color:#64748b; font-size:12px;">${o.address}</span>
-                        </td>
+                        <td style="font-weight:bold; color:#2563eb;">${o.id}<br><span style="font-size:11px; color:#aaa;">${o.date}</span></td>
+                        <td><b>${o.name}</b><br>${o.phone}<br><span style="font-size:12px; color:#64748b;">${o.address}</span></td>
+                        <td><div style="font-size:12px; color:#334155;">${itemsStr}</div><b>${o.total}</b></td>
                         <td>
-                            <div style="color:#334155; font-size:12px; margin-bottom:4px;">${itemsStr}</div>
-                            <span style="font-weight:bold; font-size:14px; color:#0f172a;">${o.total}</span>
-                        </td>
-                        <td>
-                            <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:5px; font-weight:bold; width:130px;">
+                            <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:4px; font-weight:bold;">
                                 <option value="Processing" ${o.status==='Processing'?'selected':''}>⏳ Processing</option>
                                 <option value="Shipped" ${o.status==='Shipped'?'selected':''}>🚚 Shipped</option>
                                 <option value="Delivered" ${o.status==='Delivered'?'selected':''}>✅ Delivered</option>
@@ -179,31 +184,13 @@
 
         function updateOrderStatus(orderId, newStatus) {
             let orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            orders = orders.map(o => {
-                if (o.id === orderId) o.status = newStatus;
-                return o;
-            });
+            orders = orders.map(o => { if (o.id === orderId) o.status = newStatus; return o; });
             localStorage.setItem('pakstore_orders', JSON.stringify(orders));
             renderOrdersTable();
         }
 
-        function addNewProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('p-name').value;
-            const price = parseInt(document.getElementById('p-price').value);
-            const desc = document.getElementById('p-desc').value;
-
-            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
-            products.push({ id: Date.now(), name, price, desc });
-            localStorage.setItem('pakstore_products', JSON.stringify(products));
-
-            alert(`Product "${name}" successfully listed!`);
-            document.querySelector('form').reset();
-            renderAdminProducts(); // Refresh list immediately
-        }
-
         function clearAllOrders() {
-            if (confirm('Clean out entire customer database?')) {
+            if (confirm('Clean out entire database?')) {
                 localStorage.removeItem('pakstore_orders');
                 renderOrdersTable();
             }
