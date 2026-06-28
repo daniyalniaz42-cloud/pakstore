@@ -18,8 +18,8 @@
         .cart-count { position: absolute; top: -5px; right: -5px; background: #facc15; color: #1e3a8a; font-size: 11px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
 
         /* Category Filter Bar */
-        .category-bar { display: flex; gap: 10px; margin: 20px auto; max-width: 1100px; padding: 0 15px; overflow-x: auto; }
-        .cat-btn { background: white; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 20px; font-size: 14px; cursor: pointer; font-weight: bold; color: #475569; white-space: nowrap; }
+        .category-bar { display: flex; gap: 10px; margin: 20px auto; max-width: 1100px; padding: 0 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .cat-btn { background: white; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: bold; color: #475569; white-space: nowrap; }
         .cat-btn.active { background: #1d4ed8; color: white; border-color: #1d4ed8; }
 
         /* Layout Container */
@@ -32,11 +32,11 @@
         @media (max-width: 480px) { .product-grid { grid-template-columns: 1fr; } }
         
         .product-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #eee; position: relative; }
-        .badge { position: absolute; top: 10px; right: 10px; background: #f1f5f9; color: #475569; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; }
-        .product-card h3 { font-size: 16px; margin-bottom: 5px; color: #111; padding-right: 70px; }
+        .badge { position: absolute; top: 10px; right: 10px; background: #e0f2fe; color: #0369a1; font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; }
+        .product-card h3 { font-size: 16px; margin-bottom: 5px; color: #111; padding-right: 85px; }
         .product-card p { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.4; }
         
-        /* Size Selector Styling */
+        /* Size Selector */
         .size-selector { margin-bottom: 12px; }
         .size-selector label { font-size: 12px; font-weight: bold; color: #64748b; display: block; margin-bottom: 4px; }
         .size-select { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; background: #f8fafc; }
@@ -73,10 +73,12 @@
     </nav>
 
     <div class="category-bar">
-        <button class="cat-btn active" onclick="filterCategory('all', this)">All Items</button>
-        <button class="cat-btn" onclick="filterCategory('electronic', this)">Electronics</button>
-        <button class="cat-btn" onclick="filterCategory('fashion', this)">Fashion</button>
-        <button class="cat-btn" onclick="filterCategory('etc', this)">General / Etc</button>
+        <button class="cat-btn active" onclick="filterCategory('all', this)">⚡ All Products</button>
+        <button class="cat-btn" onclick="filterCategory('electronics', this)">🔌 Electronics</button>
+        <button class="cat-btn" onclick="filterCategory('fashion', this)">👕 Fashion</button>
+        <button class="cat-btn" onclick="filterCategory('furniture', this)">🪑 Furniture</button>
+        <button class="cat-btn" onclick="filterCategory('cosmetics', this)">💄 Cosmetics</button>
+        <button class="cat-btn" onclick="filterCategory('groceries', this)">🛒 Groceries</button>
     </div>
 
     <main class="container">
@@ -127,8 +129,9 @@
         let cart = [];
         let currentFilter = 'all';
         const defaultProducts = [
-            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium bass quality, 30 hours battery.", category: "electronic", hasSize: "no" },
-            { id: 2, name: "Casual Slim Fit Denim Jacket", price: 3500, desc: "100% Cotton premium stretch denim apparel.", category: "fashion", hasSize: "yes" }
+            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium bass quality, 30 hours battery.", category: "electronics", hasSize: "no" },
+            { id: 2, name: "Casual Slim Fit Denim Jacket", price: 3500, desc: "100% Cotton premium apparel.", category: "fashion", hasSize: "yes" },
+            { id: 3, name: "Luxury Wooden Coffee Table", price: 8500, desc: "Solid ash wood minimalist lounge table.", category: "furniture", hasSize: "no" }
         ];
 
         function loadStoreProducts() {
