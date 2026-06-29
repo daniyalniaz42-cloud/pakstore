@@ -3,162 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PakStore - Official Store</title>
+    <title>PakStore - Premium Shopping</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f4f6f9; color: #333; padding-bottom: 40px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
         
-        /* Navbar */
-        nav { background: #1d4ed8; color: white; padding: 15px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        nav .logo { font-size: 22px; font-weight: bold; text-decoration: none; color: white; }
-        nav .logo span { color: #facc15; }
-        nav .nav-links { display: flex; gap: 15px; align-items: center; }
+        /* App Header */
+        header { background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; position: sticky; top: 0; z-index: 100; }
+        header .brand-logo { font-size: 20px; font-weight: 800; color: #0e9f6e; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+        header .brand-logo span { color: #1a56db; }
         
-        .cart-btn { background: #1e40af; border: none; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; position: relative; }
-        .cart-count { position: absolute; top: -5px; right: -5px; background: #facc15; color: #1e3a8a; font-size: 11px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
+        .header-icons { display: flex; gap: 16px; align-items: center; }
+        .icon-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 18px; }
+        .cart-badge { position: absolute; top: -6px; right: -8px; background: #e02424; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
 
-        /* Category Filter Bar */
-        .category-bar { display: flex; gap: 10px; margin: 20px auto; max-width: 1100px; padding: 0 15px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .cat-btn { background: white; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; font-weight: bold; color: #475569; white-space: nowrap; }
-        .cat-btn.active { background: #1d4ed8; color: white; border-color: #1d4ed8; }
+        /* Main Container */
+        .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.02); }
 
-        /* Layout Container */
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        /* Trust Banner (Only Pakistan - China Removed) */
+        .trust-banner-container { padding: 12px 16px 4px 16px; }
+        .pak-banner { background: linear-gradient(135deg, #2f855a, #48bb78); color: white; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 
-        /* Product Cards */
-        h2 { font-size: 20px; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 2px solid #1d4ed8; color: #111; }
-        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
-        @media (max-width: 480px) { .product-grid { grid-template-columns: 1fr; } }
+        /* Search Bar Component */
+        .search-section { padding: 12px 16px; }
+        .search-wrapper { position: relative; display: flex; align-items: center; }
+        .search-wrapper input { width: 100%; padding: 11px 40px 11px 40px; border: 1px solid #cbd5e0; border-radius: 8px; background: #f7f9fa; font-size: 13px; outline: none; }
+        .search-wrapper input:focus { border-color: #1a56db; background: white; }
+        .search-icon-left { position: absolute; left: 14px; color: #a0aec0; font-size: 14px; }
+
+        /* App Inspired Category Tabs Bar */
+        .category-scroller { display: flex; gap: 8px; padding: 4px 16px 12px 16px; overflow-x: auto; border-bottom: 1px solid #f7f9fa; scrollbar-width: none; }
+        .category-scroller::-webkit-scrollbar { display: none; }
+        .tab-btn { background: #f1f5f9; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #4a5568; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .tab-btn.active { background: #1a56db; color: white; }
+
+        /* Hero Promotion Banner */
+        .promo-banner { margin: 12px 16px; padding: 20px; background: linear-gradient(to right, #1e3a8a, #3b82f6); color: white; border-radius: 12px; position: relative; overflow: hidden; }
+        .promo-banner h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+        .promo-banner p { font-size: 12px; opacity: 0.9; }
+
+        /* Grid Content Workspace */
+        .section-title { padding: 12px 16px 4px 16px; font-size: 15px; font-weight: 700; color: #1a202c; display: flex; justify-content: space-between; align-items: center; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px; }
         
-        .product-card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #eee; position: relative; }
-        .badge { position: absolute; top: 10px; right: 10px; background: #e0f2fe; color: #0369a1; font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: bold; text-transform: uppercase; }
-        .product-card h3 { font-size: 16px; margin-bottom: 5px; color: #111; padding-right: 85px; }
-        .product-card p { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.4; }
+        /* Modern Product Card */
+        .product-card { background: white; border: 1px solid #edf2f7; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; position: relative; }
+        .product-card:img { background: #f7f9fa; }
+        .cat-badge { position: absolute; top: 8px; right: 8px; background: #eff6ff; color: #1e40af; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+        .product-title { font-size: 13px; font-weight: 600; color: #2d3748; margin-top: 4px; line-height: 1.4; }
+        .product-desc { font-size: 11px; color: #718096; margin: 4px 0 8px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         
-        /* Size Selector */
-        .size-selector { margin-bottom: 12px; }
-        .size-selector label { font-size: 12px; font-weight: bold; color: #64748b; display: block; margin-bottom: 4px; }
-        .size-select { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 13px; background: #f8fafc; }
+        /* Size Attribute Configurator */
+        .size-box { margin-bottom: 10px; background: #f8fafc; padding: 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .size-box label { font-size: 10px; font-weight: 700; color: #64748b; display: block; margin-bottom: 3px; }
+        .size-select { width: 100%; border: none; background: transparent; font-size: 12px; font-weight: 600; color: #1e293b; outline: none; cursor: pointer; }
 
-        .card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-        .price { font-size: 16px; font-weight: bold; color: #1d4ed8; }
+        .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .card-price { font-size: 14px; font-weight: 800; color: #1a56db; }
+        .add-cart-action { background: #1a56db; color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        /* Checkout Bottom Drawer Panel */
+        .cart-panel { padding: 16px; margin: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .cart-header { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+        .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #edf2f7; }
         
-        button.add-btn { background: #1d4ed8; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
+        .checkout-form input, .checkout-form textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
+        .btn-order-trigger { background: #0e9f6e; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-top: 12px; cursor: pointer; }
 
-        /* Panels & Forms */
-        .panel { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #eee; margin-bottom: 20px; }
-        .flex-box { display: flex; gap: 10px; margin-top: 10px; }
-        input, textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button.action-btn { background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-        button.submit-btn { background: #16a34a; color: white; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; }
+        /* App Style Tracking Overlay */
+        .tracking-panel { padding: 16px; margin: 12px 16px; background: white; border: 1px solid #edf2f7; border-radius: 12px; }
+        .tracking-input-group { display: flex; gap: 8px; margin-top: 8px; }
+        .tracking-input-group input { flex: 1; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; }
+        .tracking-input-group button { background: #4b5563; color: white; border: none; padding: 0 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; }
+        .status-display-box { padding: 12px; border-radius: 6px; margin-top: 12px; font-size: 12px; display: none; line-height: 1.5; }
 
-        .status-box { padding: 12px; border-radius: 4px; margin-top: 15px; font-size: 14px; display: none; }
-        .bg-yellow { background: #fef9c3; color: #713f12; border-left: 4px solid #eab308; }
-        .bg-blue { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
-        .bg-green { background: #dcfce7; color: #14532d; border-left: 4px solid #22c55e; }
-        .bg-red { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        /* Status Colors */
+        .status-processing { background: #fffbeb; color: #b45309; border-left: 4px solid #f59e0b; }
+        .status-shipped { background: #eff6ff; color: #1d4ed8; border-left: 4px solid #3b82f6; }
+        .status-delivered { background: #ecfdf5; color: #047857; border-left: 4px solid #10b981; }
+        .status-notfound { background: #fef2f2; color: #b91c1c; border-left: 4px solid #ef4444; }
 
-        .cart-item { display: flex; justify-content: space-between; font-size: 13px; border-bottom: 1px solid #eee; padding: 8px 0; }
-        .clear-link { font-size: 12px; color: #ef4444; cursor: pointer; float: right; background: none; border: none; }
+        /* Bottom Application Navigation Bar */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; background: white; height: 60px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; box-shadow: 0 -2px 10px rgba(0,0,0,0.03); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; color: #718096; font-size: 11px; font-weight: 600; cursor: pointer; background: none; border: none; }
+        .nav-item.active { color: #1a56db; }
+        .nav-icon { font-size: 18px; }
     </style>
 </head>
-<body onload="loadStoreProducts()">
+<body>
 
-    <nav>
-        <a href="#" class="logo">PAK<span>STORE</span></a>
-        <div class="nav-links">
-            <button class="cart-btn">Cart <span id="cart-count" class="cart-count">0</span></button>
-        </div>
-    </nav>
-
-    <div class="category-bar">
-        <button class="cat-btn active" onclick="filterCategory('all', this)">⚡ All Products</button>
-        <button class="cat-btn" onclick="filterCategory('electronics', this)">🔌 Electronics</button>
-        <button class="cat-btn" onclick="filterCategory('fashion', this)">👕 Fashion</button>
-        <button class="cat-btn" onclick="filterCategory('furniture', this)">🪑 Furniture</button>
-        <button class="cat-btn" onclick="filterCategory('cosmetics', this)">💄 Cosmetics</button>
-        <button class="cat-btn" onclick="filterCategory('groceries', this)">🛒 Groceries</button>
-    </div>
-
-    <main class="container">
+    <div class="app-container">
         
-        <div>
-            <section>
-                <h2>Our Products</h2>
-                <div class="product-grid" id="customer-product-list">
-                    </div>
-            </section>
+        <!-- HEADER COMPONENT -->
+        <header>
+            <a href="#" class="brand-logo">💡 Pak<span>Store</span></a>
+            <div class="header-icons">
+                <button class="icon-btn" onclick="scrollToElement('cart-section')">
+                    🛍️ <span id="cart-counter-badge" class="cart-badge">0</span>
+                </button>
+            </div>
+        </header>
 
-            <section id="tracking-section" class="panel">
-                <h2>Track Your Order</h2>
-                <div class="flex-box">
-                    <input type="text" id="track-id-input" placeholder="e.g., PK-1234">
-                    <button onclick="trackCustomerOrder()" class="action-btn">Track</button>
-                </div>
-                <div id="track-result-display" class="status-box"></div>
-            </section>
-        </div>
-
-        <div>
-            <div class="panel">
-                <div style="overflow: hidden; margin-bottom: 10px;">
-                    <span style="font-weight: bold; font-size: 16px;">Shopping Cart</span>
-                    <button onclick="clearCustomerCart()" class="clear-link">Clear All</button>
-                </div>
-                <div id="cart-items-list" style="margin-bottom: 15px;">
-                    <p style="color:#888; font-size:13px; text-align:center; padding:10px 0;">Cart is empty.</p>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px; margin-bottom:15px; border-top:1px solid #eee; padding-top:10px;">
-                    <span>Total Bill:</span>
-                    <span id="cart-total-price">Rs. 0</span>
-                </div>
-
-                <form onsubmit="placeCustomerOrder(event)">
-                    <p style="font-size: 12px; font-weight: bold; color: #555; margin-bottom: 5px;">SHIPPING DETAILS (COD)</p>
-                    <input type="text" id="c-name" placeholder="Your Full Name" required>
-                    <input type="tel" id="c-phone" placeholder="WhatsApp Number" required>
-                    <textarea id="c-address" placeholder="Complete Delivery Address" rows="2" required></textarea>
-                    <button type="submit" class="submit-btn">Place Order (COD)</button>
-                </form>
+        <!-- TRUSTED SHIPPING ORIGIN (Only Local Pakistan Enabled) -->
+        <div class="trust-banner-container">
+            <div class="pak-banner">
+                🇵🇰 Available From Pakistan (Fast Delivery)
             </div>
         </div>
-    </main>
+
+        <!-- SEARCH BAR MODULE -->
+        <div class="search-section">
+            <div class="search-wrapper">
+                <span class="search-icon-left">🔍</span>
+                <input type="text" id="store-search-field" oninput="handleSearchFilter()" placeholder="Search Product Name or Keywords...">
+            </div>
+        </div>
+
+        <!-- CATEGORY NAVIGATION SCROLLER -->
+        <div class="category-scroller">
+            <button class="tab-btn active" onclick="switchCategoryFilter('all', this)">✨ All Items</button>
+            <button class="tab-btn" onclick="switchCategoryFilter('electronics', this)">🔌 Electronics</button>
+            <button class="tab-btn" onclick="switchCategoryFilter('fashion', this)">👕 Fashion</button>
+            <button class="tab-btn" onclick="switchCategoryFilter('furniture', this)">🪑 Furniture</button>
+            <button class="tab-btn" onclick="switchCategoryFilter('cosmetics', this)">💄 Cosmetics</button>
+            <button class="tab-btn" onclick="switchCategoryFilter('groceries', this)">🛒 Groceries</button>
+        </div>
+
+        <!-- HERO BRANDING IMAGE BOARD -->
+        <div class="promo-banner">
+            <h2>Discover Quality</h2>
+            <p>Premium items delivered directly to your doorstep via COD.</p>
+        </div>
+
+        <!-- MAIN PRODUCTS SEGMENT -->
+        <div class="section-title">
+            <span>Trending Products</span>
+        </div>
+        
+        <div class="product-grid" id="products-render-target">
+            <!-- Dynamic catalog injection site -->
+        </div>
+
+        <!-- ORDER TRACKING DESK -->
+        <div class="tracking-panel" id="tracking-section">
+            <span style="font-size: 14px; font-weight: 700; color: #1a202c;">Track Status</span>
+            <div class="tracking-input-group">
+                <input type="text" id="tracking-id-query" placeholder="Enter Order ID (e.g., PK-1234)">
+                <button onclick="executeOrderTracking()">Verify</button>
+            </div>
+            <div id="tracking-response-box" class="status-display-box"></div>
+        </div>
+
+        <!-- CART DRAWER / OVERVIEW PANEL -->
+        <div class="cart-panel" id="cart-section">
+            <div class="cart-header">
+                <span>Selected Items Basket</span>
+                <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="clearBasketData()">Reset</span>
+            </div>
+            <div id="basket-items-container" style="margin-bottom: 12px;">
+                <p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight:800; font-size:14px; border-top:1px solid #edf2f7; padding-top:10px; margin-bottom:12px;">
+                <span>Total Payable:</span>
+                <span id="basket-total-sum">Rs. 0</span>
+            </div>
+
+            <form onsubmit="dispatchCustomerOrder(event)" class="checkout-form">
+                <input type="text" id="form-cust-name" placeholder="Full Name" required>
+                <input type="tel" id="form-cust-phone" placeholder="WhatsApp Number" required>
+                <textarea id="form-cust-address" placeholder="Complete Street Address & City" rows="2" required></textarea>
+                <button type="submit" class="btn-order-trigger">Confirm Order (Cash on Delivery)</button>
+            </form>
+        </div>
+
+        <!-- PERSISTENT APP FOOTER NAVIGATION -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="scrollToElement('app-container')">
+                <span class="nav-icon">🏠</span><span>Home</span>
+            </button>
+            <button class="nav-item" onclick="scrollToElement('products-render-target')">
+                <span class="nav-icon">🗂️</span><span>Products</span>
+            </button>
+            <button class="nav-item" onclick="scrollToElement('tracking-section')">
+                <span class="nav-icon">📦</span><span>Orders</span>
+            </button>
+            <button class="nav-item" onclick="scrollToElement('cart-section')">
+                <span class="nav-icon">🛒</span><span>Basket</span>
+            </button>
+        </div>
+
+    </div>
 
     <script>
-        let cart = [];
-        let currentFilter = 'all';
-        const defaultProducts = [
-            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium bass quality, 30 hours battery.", category: "electronics", hasSize: "no" },
-            { id: 2, name: "Casual Slim Fit Denim Jacket", price: 3500, desc: "100% Cotton premium apparel.", category: "fashion", hasSize: "yes" },
-            { id: 3, name: "Luxury Wooden Coffee Table", price: 8500, desc: "Solid ash wood minimalist lounge table.", category: "furniture", hasSize: "no" }
+        let shoppingCart = [];
+        let activeCategory = 'all';
+        let searchQuery = '';
+
+        const nativeBackupDataset = [
+            { id: 1, name: "Smart Wireless Earbuds Pro", price: 2450, desc: "Premium sound clarity, long-lasting backup case.", category: "electronics", hasSize: "no" },
+            { id: 2, name: "Premium Cotton Unstitched Fabric", price: 3500, desc: "High quality summer collection wash n wear.", category: "fashion", hasSize: "yes" },
+            { id: 3, name: "Minimalist Lounge Chair", price: 9500, desc: "Ergonomic wooden style decor luxury furniture.", category: "furniture", hasSize: "no" }
         ];
 
         function loadStoreProducts() {
             if (!localStorage.getItem('pakstore_products')) {
-                localStorage.setItem('pakstore_products', JSON.stringify(defaultProducts));
+                localStorage.setItem('pakstore_products', JSON.stringify(nativeBackupDataset));
             }
-            renderStorefront();
+            renderStorefrontCatalog();
         }
 
-        function renderStorefront() {
-            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
-            const container = document.getElementById('customer-product-list');
+        window.onload = loadStoreProducts;
+
+        function renderStorefrontCatalog() {
+            const masterList = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            const grid = document.getElementById('products-render-target');
             
-            const filtered = currentFilter === 'all' ? products : products.filter(p => p.category === currentFilter);
-            
+            // Apply double filtration logic (Category + Text Search)
+            let filtered = activeCategory === 'all' ? masterList : masterList.filter(p => p.category === activeCategory);
+            if (searchQuery) {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.desc.toLowerCase().includes(searchQuery.toLowerCase()));
+            }
+
             if(filtered.length === 0) {
-                container.innerHTML = `<p style="grid-column:1/-1; color:#999; text-align:center; padding:20px;">No items found in this category.</p>`;
+                grid.innerHTML = `<p style="grid-column:1/-1; color:#a0aec0; text-align:center; font-size:13px; padding:30px 0;">No matching items live in this section.</p>`;
                 return;
             }
 
-            container.innerHTML = filtered.map(p => {
-                let sizeHTML = '';
+            grid.innerHTML = filtered.map(p => {
+                let sizeConfiguratorMarkup = '';
                 if(p.hasSize === 'yes') {
-                    sizeHTML = `
-                        <div class="size-selector">
-                            <label>Select Size:</label>
-                            <select class="size-select" id="size-select-${p.id}">
+                    sizeConfiguratorMarkup = `
+                        <div class="size-box">
+                            <label>CHOOSE SIZE</label>
+                            <select class="size-select" id="size-node-${p.id}">
                                 <option value="S">Small (S)</option>
                                 <option value="M" selected>Medium (M)</option>
                                 <option value="L">Large (L)</option>
@@ -169,106 +246,132 @@
                 }
                 return `
                     <div class="product-card">
-                        <span class="badge">${p.category}</span>
+                        <span class="cat-badge">${p.category}</span>
                         <div>
-                            <h3>${p.name}</h3>
-                            <p>${p.desc}</p>
-                            ${sizeHTML}
+                            <div style="width:100%; height:110px; background:#f7f9fa; border-radius:8px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; color:#cbd5e0; font-size:24px;">📦</div>
+                            <h3 class="product-title">${p.name}</h3>
+                            <p class="product-desc">${p.desc}</p>
+                            ${sizeConfiguratorMarkup}
                         </div>
-                        <div class="card-bottom">
-                            <span class="price">Rs. ${p.price}</span>
-                            <button onclick="prepareAddToCart(${p.id}, '${p.name}', ${p.price}, '${p.hasSize}')" class="add-btn">Add to Cart</button>
+                        <div class="card-meta">
+                            <span class="card-price">Rs. ${p.price}</span>
+                            <button onclick="commitItemToCart(${p.id}, '${p.name}', ${p.price}, '${p.hasSize}')" class="add-cart-action">+</button>
                         </div>
                     </div>
                 `;
             }).join('');
         }
 
-        function filterCategory(cat, btn) {
-            currentFilter = cat;
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderStorefront();
+        function switchCategoryFilter(categoryKey, tabNode) {
+            activeCategory = categoryKey;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            tabNode.classList.add('active');
+            renderStorefrontCatalog();
         }
 
-        function prepareAddToCart(id, name, price, hasSize) {
-            let finalName = name;
-            if(hasSize === 'yes') {
-                const sizeVal = document.getElementById(`size-select-${id}`).value;
-                finalName = `${name} [Size: ${sizeVal}]`;
-            }
-            
-            const item = cart.find(i => i.name === finalName);
-            if (item) { item.qty += 1; } else { cart.push({ name: finalName, price, qty: 1 }); }
-            renderCart();
+        function handleSearchFilter() {
+            searchQuery = document.getElementById('store-search-field').value.trim();
+            renderStorefrontCatalog();
         }
 
-        function renderCart() {
-            const list = document.getElementById('cart-items-list');
-            const count = document.getElementById('cart-count');
-            const total = document.getElementById('cart-total-price');
-            
-            if (cart.length === 0) {
-                list.innerHTML = '<p style="color:#888; font-size:13px; text-align:center; padding:10px 0;">Cart is empty.</p>';
-                count.innerText = '0'; total.innerText = 'Rs. 0'; return;
+        function commitItemToCart(id, name, price, sizeRequirement) {
+            let itemFinalSignature = name;
+            if(sizeRequirement === 'yes') {
+                const selectedSize = document.getElementById(`size-node-${id}`).value;
+                itemFinalSignature = `${name} (${selectedSize})`;
             }
             
-            count.innerText = cart.reduce((sum, i) => sum + i.qty, 0);
-            let sumPrice = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            const existingInstance = shoppingCart.find(i => i.name === itemFinalSignature);
+            if (existingInstance) {
+                existingInstance.qty += 1;
+            } else {
+                shoppingCart.push({ name: itemFinalSignature, price, qty: 1 });
+            }
+            synchronizeBasketUi();
+        }
+
+        function synchronizeBasketUi() {
+            const listNode = document.getElementById('basket-items-container');
+            const badge = document.getElementById('cart-counter-badge');
+            const sumDisplay = document.getElementById('basket-total-sum');
             
-            list.innerHTML = cart.map(i => `
-                <div class="cart-item">
-                    <div><b>${i.name}</b><br><span style="color:#666; font-size:11px;">Rs. ${i.price} x ${i.qty}</span></div>
-                    <span style="font-weight:bold;">Rs. ${i.price * i.qty}</span>
+            if (shoppingCart.length === 0) {
+                listNode.innerHTML = '<p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>';
+                badge.innerText = '0';
+                sumDisplay.innerText = 'Rs. 0';
+                return;
+            }
+            
+            badge.innerText = shoppingCart.reduce((acc, current) => acc + current.qty, 0);
+            let absoluteBillTotal = shoppingCart.reduce((acc, current) => acc + (current.price * current.qty), 0);
+            
+            listNode.innerHTML = shoppingCart.map(i => `
+                <div class="cart-item-row">
+                    <div><strong>${i.name}</strong><br><span style="color:#718096;">Rs. ${i.price} x ${i.qty}</span></div>
+                    <span style="font-weight:700; color:#1a202c;">Rs. ${i.price * i.qty}</span>
                 </div>
             `).join('');
-            total.innerText = `Rs. ${sumPrice}`;
+            sumDisplay.innerText = `Rs. ${absoluteBillTotal}`;
         }
 
-        function clearCustomerCart() { cart = []; renderCart(); }
+        function clearBasketData() { shoppingCart = []; synchronizeBasketUi(); }
 
-        function placeCustomerOrder(e) {
+        function dispatchCustomerOrder(e) {
             e.preventDefault();
-            if (cart.length === 0) { alert('Please add products to cart first!'); return; }
+            if (shoppingCart.length === 0) { alert('Your basket is empty. Add products first!'); return; }
 
-            const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            const orderId = 'PK-' + Math.floor(1000 + Math.random() * 9000);
+            const historicalOrders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            const computedOrderId = 'PK-' + Math.floor(1000 + Math.random() * 9000);
             
-            const newOrder = {
-                id: orderId,
-                name: document.getElementById('c-name').value,
-                phone: document.getElementById('c-phone').value,
-                address: document.getElementById('c-address').value,
-                items: cart,
-                total: document.getElementById('cart-total-price').innerText,
+            const payload = {
+                id: computedOrderId,
+                name: document.getElementById('form-cust-name').value.trim(),
+                phone: document.getElementById('form-cust-phone').value.trim(),
+                address: document.getElementById('form-cust-address').value.trim(),
+                items: shoppingCart,
+                total: document.getElementById('basket-total-sum').innerText,
                 status: 'Processing',
                 date: new Date().toLocaleDateString()
             };
 
-            orders.push(newOrder);
-            localStorage.setItem('pakstore_orders', JSON.stringify(orders));
+            historicalOrders.push(payload);
+            localStorage.setItem('pakstore_orders', JSON.stringify(historicalOrders));
 
-            alert(`🎉 Order Success!\nOrder ID: ${orderId}`);
-            clearCustomerCart();
-            document.querySelector('form').reset();
+            alert(`🎉 Order Confirmed Successfully!\nSave Your Order ID: ${computedOrderId}`);
+            clearBasketData();
+            document.querySelector('.checkout-form').reset();
         }
 
-        function trackCustomerOrder() {
-            const id = document.getElementById('track-id-input').value.trim().toUpperCase();
-            const display = document.getElementById('track-result-display');
+        function executeOrderTracking() {
+            const targetedId = document.getElementById('tracking-id-query').value.trim().toUpperCase();
+            const box = document.getElementById('tracking-response-box');
             const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            const order = orders.find(o => o.id === id);
+            const targetRecord = orders.find(o => o.id === targetedId);
 
-            display.className = "status-box"; display.style.display = "block";
-            if (!order) {
-                display.classList.add('bg-red');
-                display.innerHTML = `<strong>Order ID Not Found!</strong>`; return;
+            box.className = "status-display-box";
+            box.style.display = "block";
+            
+            if (!targetRecord) {
+                box.classList.add('status-notfound');
+                box.innerHTML = `<strong>Order Record Not Found</strong><br>Please double check the ID code digits.`;
+                return;
             }
-            if (order.status === 'Processing') display.classList.add('bg-yellow');
-            if (order.status === 'Shipped') display.classList.add('bg-blue');
-            if (order.status === 'Delivered') display.classList.add('bg-green');
+            
+            if (targetRecord.status === 'Processing') box.classList.add('status-processing');
+            if (targetRecord.status === 'Shipped') box.classList.add('status-shipped');
+            if (targetRecord.status === 'Delivered') box.classList.add('status-delivered');
 
-            display.innerHTML = `<strong>Status: ${order.status}</strong><br>Dear ${order.name}, your bill of ${order.total} is <b>${order.status}</b>.`;
+            box.innerHTML = `<strong>Shipment Status: ${targetRecord.status}</strong><br>Hello ${targetRecord.name}, your parcel valuing ${targetRecord.total} is currently marked as <b>${targetRecord.status}</b>.`;
+        }
+
+        function scrollToElement(id) {
+            const target = document.getElementById(id);
+            if(target) target.scrollIntoView({ behavior: 'smooth' });
+            
+            // Update active footer nav highlight
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNavButton = Array.from(document.querySelectorAll('.nav-item')).find(btn => btn.getAttribute('onclick').includes(id));
+            if(activeNavButton) activeNavButton.classList.add('active');
         }
     </script>
 </body>
