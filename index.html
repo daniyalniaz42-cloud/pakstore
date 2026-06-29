@@ -66,7 +66,7 @@
         <header>
             <a href="#" class="brand-logo"><img src="Logo.png" alt="Logo"></a>
             <div class="header-icons">
-                <button class="icon-btn" onclick="scrollToId('cart-section')">️ <span id="cart-counter-badge" class="cart-badge">0</span></button>
+                <button class="icon-btn" onclick="scrollToId('cart-section')">🛍️ <span id="cart-counter-badge" class="cart-badge">0</span></button>
             </div>
         </header>
 
@@ -96,7 +96,7 @@
 
         <div class="cart-panel" id="cart-section">
             <div class="cart-header">
-                <span> Selected Products</span>
+                <span>🛒 Selected Products</span>
                 <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">🗑️ Clear</span>
             </div>
             <div id="basket-items-container">
@@ -123,8 +123,8 @@
     </div>
 
     <script>
-        // ️ YAHAN APNI GOOGLE APPS SCRIPT URL DALEIN
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxlmlRkA1kIQcVylzQ8SdeGw2C7rfwPIL0lP70PFDKeHUPWU2IxvhPCVBIl5yts54XqRA/exec';
+        // ⚠️ YAHAN APNI GOOGLE APPS SCRIPT URL DALEIN
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyh93pf2sNa4u6e68zrlD6H_FcaocFJPC3sPj0s0mKGC6nsFto50NkaEFg5ELAPtYd13Q/exec';
 
         let shoppingCart = [];
         let rootVertical = 'all';
@@ -279,21 +279,20 @@
             }
         }
 
-        // ✅ FIXED: Use no-cors mode for POST requests
+        // ✅ FIXED: No 'no-cors' mode, standard fetch with proper headers
         async function apiPost(data) {
             const response = await fetch(API_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                headers: {'Content-Type': 'text/plain;charset=utf-8'},
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             });
-            return {success: true};
+            return response.json();
         }
 
         async function placeOrder(e) {
             e.preventDefault();
             if (shoppingCart.length === 0) {
-                alert('️ Basket empty hai!');
+                alert('⚠️ Basket empty hai!');
                 return;
             }
             
@@ -316,11 +315,15 @@
             };
 
             try {
-                await apiPost(orderPayload);
+                const result = await apiPost(orderPayload);
                 
-                alert(`🎉 Order Confirmed!\n\n📦 Order ID: ${orderId}\n💰 Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
-                wipeCart();
-                e.target.reset();
+                if (result.success) {
+                    alert(`🎉 Order Confirmed!\n\n📦 Order ID: ${orderId}\n💰 Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
+                    wipeCart();
+                    e.target.reset();
+                } else {
+                    throw new Error(result.error || 'Unknown error');
+                }
             } catch (err) {
                 alert("❌ Error: " + err.message);
                 btn.disabled = false;
