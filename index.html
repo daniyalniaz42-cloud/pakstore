@@ -9,9 +9,11 @@
         body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
         
         /* App Header */
-        header { background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; position: sticky; top: 0; z-index: 100; }
-        header .brand-logo { font-size: 20px; font-weight: 800; color: #0e9f6e; text-decoration: none; display: flex; align-items: center; gap: 4px; }
-        header .brand-logo span { color: #1a56db; }
+        header { background: white; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; position: sticky; top: 0; z-index: 100; height: 56px; }
+        
+        /* Premium Uploaded Logo Implementation */
+        header .brand-logo { display: flex; align-items: center; text-decoration: none; height: 100%; }
+        .logo-img { height: 42px; width: auto; object-fit: contain; }
         
         .header-icons { display: flex; gap: 16px; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 18px; }
@@ -20,7 +22,7 @@
         /* Main Container */
         .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.02); }
 
-        /* Trust Banner (Only Pakistan - China Removed) */
+        /* Trust Banner (Only Pakistan) */
         .trust-banner-container { padding: 12px 16px 4px 16px; }
         .pak-banner { background: linear-gradient(135deg, #2f855a, #48bb78); color: white; padding: 12px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 
@@ -48,7 +50,6 @@
         
         /* Modern Product Card */
         .product-card { background: white; border: 1px solid #edf2f7; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s; position: relative; }
-        .product-card:img { background: #f7f9fa; }
         .cat-badge { position: absolute; top: 8px; right: 8px; background: #eff6ff; color: #1e40af; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
         .product-title { font-size: 13px; font-weight: 600; color: #2d3748; margin-top: 4px; line-height: 1.4; }
         .product-desc { font-size: 11px; color: #718096; margin: 4px 0 8px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -94,9 +95,11 @@
 
     <div class="app-container">
         
-        <!-- HEADER COMPONENT -->
+        <!-- HEADER COMPONENT (With New Logo.png Link) -->
         <header>
-            <a href="#" class="brand-logo">💡 Pak<span>Store</span></a>
+            <a href="#" class="brand-logo">
+                <img src="Logo.png" alt="PakStore Logo" class="logo-img">
+            </a>
             <div class="header-icons">
                 <button class="icon-btn" onclick="scrollToElement('cart-section')">
                     🛍️ <span id="cart-counter-badge" class="cart-badge">0</span>
@@ -104,7 +107,7 @@
             </div>
         </header>
 
-        <!-- TRUSTED SHIPPING ORIGIN (Only Local Pakistan Enabled) -->
+        <!-- TRUSTED SHIPPING ORIGIN -->
         <div class="trust-banner-container">
             <div class="pak-banner">
                 🇵🇰 Available From Pakistan (Fast Delivery)
@@ -218,7 +221,6 @@
             const masterList = JSON.parse(localStorage.getItem('pakstore_products')) || [];
             const grid = document.getElementById('products-render-target');
             
-            // Apply double filtration logic (Category + Text Search)
             let filtered = activeCategory === 'all' ? masterList : masterList.filter(p => p.category === activeCategory);
             if (searchQuery) {
                 filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.desc.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -368,7 +370,6 @@
             const target = document.getElementById(id);
             if(target) target.scrollIntoView({ behavior: 'smooth' });
             
-            // Update active footer nav highlight
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             const activeNavButton = Array.from(document.querySelectorAll('.nav-item')).find(btn => btn.getAttribute('onclick').includes(id));
             if(activeNavButton) activeNavButton.classList.add('active');
