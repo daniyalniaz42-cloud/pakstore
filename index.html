@@ -3,59 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PakStore - Premium Shopping Hub</title>
+    <title>PakStore - Hub</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
         
-        /* App Main Header */
-        header { 
-            background: white; 
-            padding: 4px 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid #edf2f7; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            height: 70px; 
-        }
-        header .brand-logo img { height: 50px; width: auto; object-fit: contain; }
+        header { background: white; padding: 4px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; height: 70px; position: sticky; top: 0; z-index: 100; }
+        header .brand-logo img { height: 50px; width: auto; }
         .header-icons { display: flex; gap: 16px; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 22px; }
         .cart-badge { position: absolute; top: -6px; right: -8px; background: #e02424; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
 
         .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.02); }
-
-        /* Delivery Badge */
         .trust-banner-container { padding: 12px 16px 4px 16px; }
         .pak-banner { background: linear-gradient(135deg, #2f855a, #48bb78); color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 13px; }
 
-        /* Search Infrastructure */
         .search-section { padding: 12px 16px; }
         .search-wrapper { position: relative; display: flex; align-items: center; }
         .search-wrapper input { width: 100%; padding: 11px 40px; border: 1px solid #cbd5e0; border-radius: 8px; background: #f7f9fa; font-size: 13px; outline: none; }
         .search-icon-left { position: absolute; left: 14px; color: #a0aec0; font-size: 14px; }
 
-        /* Top High-Level Context Tabs (Baseline Layout) */
         .main-vertical-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 16px; }
-        .tab-node { padding: 12px; text-align: center; background: #f1f5f9; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s; }
+        .tab-node { padding: 12px; text-align: center; background: #f1f5f9; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; }
         .tab-node.active { background: #1a56db; color: white; }
 
-        /* Dynamic Conditional Subcategory Section */
+        /* Subcategories Pill Section Layout */
         .subcat-wrapper-panel { background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 12px; padding: 12px 16px; display: none; }
-        .subcat-group-title { font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
-        .subcat-flex-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
-        .subcat-flex-row::-webkit-scrollbar { display: none; }
+        .subcat-group-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+        .subcat-flex-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
         .subcat-pill { padding: 6px 14px; background: white; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap; cursor: pointer; }
         .subcat-pill.active { background: #eff6ff; border-color: #1a56db; color: #1a56db; }
 
-        /* Products Grid Panel */
-        .section-title { padding: 16px 16px 4px 16px; font-size: 15px; font-weight: 700; color: #1a202c; display: flex; justify-content: space-between; align-items: center; }
+        .section-title { padding: 16px 16px 4px 16px; font-size: 15px; font-weight: 700; color: #1a202c; }
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px; }
         
-        /* Multi-Image Product Architecture */
         .product-card { background: white; border: 1px solid #edf2f7; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
         .product-image-carousel { width: 100%; height: 140px; position: relative; overflow: hidden; border-radius: 8px; background: #f7f9fa; }
         .carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease; }
@@ -79,14 +60,12 @@
         .card-price { font-size: 14px; font-weight: 800; color: #1a56db; }
         .add-cart-action { background: #1a56db; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
-        /* Checkout Infrastructure */
         .cart-panel { padding: 16px; margin: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
         .cart-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
         .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #edf2f7; }
         .checkout-form input, .checkout-form textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
         .btn-order-trigger { background: #0e9f6e; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-top: 12px; cursor: pointer; }
 
-        /* Footer Sticky Navigation */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; background: white; height: 55px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; background: none; border: none; color: #718096; font-size: 11px; font-weight: 600; cursor: pointer; }
         .nav-item.active { color: #1a56db; }
@@ -104,27 +83,23 @@
         </header>
 
         <div class="trust-banner-container">
-            <div class="pak-banner">🇵🇰 Available Across Pakistan - Cash On Delivery</div>
+            <div class="pak-banner">🇵🇰 Cash On Delivery - All Over Pakistan</div>
         </div>
 
         <div class="search-section">
             <div class="search-wrapper">
                 <span class="search-icon-left">🔍</span>
-                <input type="text" id="store-search-field" oninput="triggerSearch()" placeholder="Search item specs or code...">
+                <input type="text" id="store-search-field" oninput="triggerSearch()" placeholder="Search product names...">
             </div>
         </div>
 
-        <!-- MAIN HIGH-LEVEL TABS (As per original baseline design) -->
         <div class="main-vertical-tabs">
             <div class="tab-node active" id="tab-all" onclick="selectRootVertical('all')">All Products</div>
             <div class="tab-node" id="tab-fashion" onclick="selectRootVertical('fashion')">Fashion</div>
             <div class="tab-node" id="tab-electronics" onclick="selectRootVertical('electronics')">Electronics</div>
         </div>
 
-        <!-- CONDITIONAL DYNAMIC SUBCATEGORY INJECTION PANEL -->
-        <div class="subcat-wrapper-panel" id="subcat-container-panel">
-            <!-- Dynamically populated pills go here -->
-        </div>
+        <div class="subcat-wrapper-panel" id="subcat-container-panel"></div>
 
         <div class="section-title">
             <span id="catalog-header-text">All Available Stock</span>
@@ -132,10 +107,9 @@
         
         <div class="product-grid" id="products-render-target"></div>
 
-        <!-- BASKET DRAWER PANEL -->
         <div class="cart-panel" id="cart-section">
             <div class="cart-header">
-                <span>Your Selected Items</span>
+                <span>Selected Products</span>
                 <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">Clear</span>
             </div>
             <div id="basket-items-container">
@@ -147,17 +121,17 @@
             </div>
 
             <form onsubmit="placeOrder(event)" class="checkout-form">
-                <input type="text" id="cust-name" placeholder="Your Full Name" required>
-                <input type="tel" id="cust-phone" placeholder="WhatsApp Phone Number" required>
-                <textarea id="cust-address" placeholder="Shipping Address & City Name" rows="2" required></textarea>
-                <button type="submit" class="btn-order-trigger">Place Order Via COD</button>
+                <input type="text" id="cust-name" placeholder="Full Name" required>
+                <input type="tel" id="cust-phone" placeholder="WhatsApp Number" required>
+                <textarea id="cust-address" placeholder="Delivery Address" rows="2" required></textarea>
+                <button type="submit" class="btn-order-trigger">Confirm Order</button>
             </form>
         </div>
 
         <div class="bottom-nav">
             <button class="nav-item active" onclick="scrollToId('app-container')">🏠 <span>Home</span></button>
             <button class="nav-item" onclick="scrollToId('products-render-target')">🗂️ <span>Products</span></button>
-            <button class="nav-item" onclick="scrollToId('cart-section')">🛒 <span>My Basket</span></button>
+            <button class="nav-item" onclick="scrollToId('cart-section')">🛒 <span>Basket</span></button>
         </div>
 
     </div>
@@ -169,14 +143,14 @@
         let textSearchPattern = '';
         let sliderPositions = {};
 
-        // Default mock framework inventory
+        // Default Mock Baseline Database
         const defaultStockRegistry = [
-            { id: 101, name: "Men Cotton Unstitched Premium Suite", price: 1800, desc: "Classic soft premium wash n wear traditional cloth bundle.", root: "fashion", sub: "men-fashion", hasSize: "no", images: ["https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400"] },
-            { id: 102, name: "Men Luxury Black Quartz Watch", price: 2990, desc: "Waterproof sleek chronometer layout with leather belts.", root: "fashion", sub: "men-fashion", hasSize: "no", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"] },
-            { id: 103, name: "Women Designer Zircon Necklace Set", price: 3500, desc: "Premium high shine jewellery set perfect for wedding functions.", root: "fashion", sub: "women-fashion", hasSize: "no", images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400"] },
-            { id: 104, name: "Women Casual Print Stitched Kurti", price: 1450, desc: "Breathable pure lawn cotton wear short length layout design.", root: "fashion", sub: "women-fashion", hasSize: "yes", images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400"] },
-            { id: 105, name: "Wireless Bluetooth Bass Earbuds", price: 1650, desc: "Type-C digital display indicator nodes with ultra low latency.", root: "electronics", sub: "audio", hasSize: "no", images: ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400"] },
-            { id: 106, name: "Smart Watch Ultra Series 8 Node", price: 4200, desc: "HD screen activity tracker with heartbeat blood pressure monitor.", root: "electronics", sub: "wearables", hasSize: "no", images: ["https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400"] }
+            { id: 101, name: "Men Unstitched Soft Cotton Wear", price: 1800, desc: "Premium wash n wear fabric bundle.", root: "fashion", sub: "men-clothes", hasSize: "no", images: ["https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400"] },
+            { id: 102, name: "Men Luxury Chrono Quartz Watch", price: 2990, desc: "Waterproof sleek analog configuration watch.", root: "fashion", sub: "men-watches", hasSize: "no", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"] },
+            { id: 103, name: "Women Gold Zircon Complete Choker Set", price: 3500, desc: "High shine wedding design premium set.", root: "fashion", sub: "women-jewellery", hasSize: "no", images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400"] },
+            { id: 104, name: "Women Classic Linen Digital Kurti", price: 1450, desc: "Pure linen stitched regular fit design.", root: "fashion", sub: "women-clothes", hasSize: "yes", images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400"] },
+            { id: 105, name: "Ultra Pods Pro Wireless Buds", price: 1650, desc: "High bass nodes with dual LED charging meters.", root: "electronics", sub: "elec-audio", hasSize: "no", images: ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400"] },
+            { id: 106, name: "Series 8 Smart Watch Waterproof", price: 4200, desc: "Full touch screen fitness tracking node.", root: "electronics", sub: "elec-wearables", hasSize: "no", images: ["https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400"] }
         ];
 
         window.onload = function() {
@@ -186,12 +160,10 @@
             renderGlobalCatalog();
         };
 
-        // Handles switching between Main categories (All, Fashion, Electronics)
         function selectRootVertical(type) {
             rootVertical = type;
-            subCategoryFilter = 'all'; // Clear sub filters upon core parent mutation
+            subCategoryFilter = 'all';
             
-            // Adjust visual tab highlight switching
             document.querySelectorAll('.tab-node').forEach(n => n.classList.remove('active'));
             document.getElementById(`tab-${type}`).classList.add('active');
 
@@ -204,11 +176,13 @@
             else if (type === 'fashion') {
                 subPanel.style.display = 'block';
                 subPanel.innerHTML = `
-                    <div class="subcat-group-title">Explore Fashion Sectors</div>
+                    <div class="subcat-group-title">Fashion Categories</div>
                     <div class="subcat-flex-row">
-                        <span class="subcat-pill active" id="sub-pill-all" onclick="applySubFilter('all')">All Fashion</span>
-                        <span class="subcat-pill" id="sub-pill-men" onclick="applySubFilter('men-fashion')">Men's Fashion</span>
-                        <span class="subcat-pill" id="sub-pill-women" onclick="applySubFilter('women-fashion')">Women's Fashion</span>
+                        <span class="subcat-pill active" onclick="applySubFilter(this, 'all')">All Fashion</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'men-clothes')">Men's Clothes</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'men-watches')">Men's Watches</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'women-clothes')">Women's Clothes</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'women-jewellery')">Women's Jewellery</span>
                     </div>
                 `;
                 document.getElementById('catalog-header-text').innerText = "Fashion Inventory";
@@ -216,29 +190,23 @@
             else if (type === 'electronics') {
                 subPanel.style.display = 'block';
                 subPanel.innerHTML = `
-                    <div class="subcat-group-title">Electronics Segments</div>
+                    <div class="subcat-group-title">Electronics Categories</div>
                     <div class="subcat-flex-row">
-                        <span class="subcat-pill active" id="sub-pill-all" onclick="applySubFilter('all')">All Electronics</span>
-                        <span class="subcat-pill" id="sub-pill-audio" onclick="applySubFilter('audio')">Audio & Pods</span>
-                        <span class="subcat-pill" id="sub-pill-wearables" onclick="applySubFilter('wearables')">Smart Wearables</span>
+                        <span class="subcat-pill active" onclick="applySubFilter(this, 'all')">All Electronics</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'elec-audio')">Audio & Earbuds</span>
+                        <span class="subcat-pill" onclick="applySubFilter(this, 'elec-wearables')">Smart Watches</span>
                     </div>
                 `;
                 document.getElementById('catalog-header-text').innerText = "Electronics Inventory";
             }
-
             renderGlobalCatalog();
         }
 
-        function applySubFilter(subType) {
+        function applySubFilter(element, subType) {
             subCategoryFilter = subType;
-            document.querySelectorAll('.subcat-pill').forEach(p => p.classList.remove('active'));
-            
-            if(subType === 'all') document.getElementById('sub-pill-all').classList.add('active');
-            else if(subType === 'men-fashion') document.getElementById('sub-pill-men').classList.add('active');
-            else if(subType === 'women-fashion') document.getElementById('sub-pill-women').classList.add('active');
-            else if(subType === 'audio') document.getElementById('sub-pill-audio').classList.add('active');
-            else if(subType === 'wearables') document.getElementById('sub-pill-wearables').classList.add('active');
-
+            // Target specific pills inside the subcat flex layout container row safely
+            element.parentElement.querySelectorAll('.subcat-pill').forEach(p => p.classList.remove('active'));
+            element.classList.add('active');
             renderGlobalCatalog();
         }
 
@@ -246,14 +214,13 @@
             const masterList = JSON.parse(localStorage.getItem('pakstore_products')) || [];
             const grid = document.getElementById('products-render-target');
             
-            // Core filter layer logic cascading sequential operations
             let workingSet = masterList;
             if(rootVertical !== 'all') workingSet = workingSet.filter(p => p.root === rootVertical);
             if(subCategoryFilter !== 'all') workingSet = workingSet.filter(p => p.sub === subCategoryFilter);
             if(textSearchPattern) workingSet = workingSet.filter(p => p.name.toLowerCase().includes(textSearchPattern.toLowerCase()));
 
             if(workingSet.length === 0) {
-                grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px 0; font-size:12px; color:#94a3b8;">No matching store item instances found.</p>`;
+                grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:40px 0; font-size:12px; color:#94a3b8;">Is section me koi product mojood nahi hai.</p>`;
                 return;
             }
 
@@ -313,9 +280,7 @@
 
         function pushToBasket(id, name, price, sizeVar) {
             let label = name;
-            if(sizeVar === 'yes') {
-                label += ` [Size: ${document.getElementById(`size-box-${id}`).value}]`;
-            }
+            if(sizeVar === 'yes') { label += ` (${document.getElementById(`size-box-${id}`).value})`; }
             const match = shoppingCart.find(i => i.label === label);
             if(match) match.qty++;
             else shoppingCart.push({ label, price, qty: 1 });
@@ -349,14 +314,12 @@
             e.preventDefault();
             if(shoppingCart.length === 0) { alert('Basket empty hai!'); return; }
             const orderId = 'PK-' + Math.floor(1000 + Math.random() * 9000);
-            alert(`🎉 Order Success!\nOrder ID: ${orderId}\nCash on delivery active.`);
+            alert(`🎉 Order Confirmed!\nOrder ID: ${orderId}`);
             wipeCart();
             e.target.reset();
         }
 
-        function scrollToId(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        }
+        function scrollToId(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
     </script>
 </body>
 </html>
