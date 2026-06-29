@@ -121,8 +121,8 @@
     </div>
 
     <script>
-        // ✅ SUPABASE CREDENTIALS - Already filled
-        const SUPABASE_URL = 'https://mriodmlejaguxlnjzkpv.supabase.co/rest/v1/';
+        // ✅ CORRECTED - No /rest/v1 in URL
+        const SUPABASE_URL = 'https://mriodmlejaguxlnjjzkpv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaW9kbWxlamFndXhsbmp6a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MTA1OTQsImV4cCI6MjA5ODI4NjU5NH0.zwfpCiNrE_WUDxCJk0orMXKvzlbgTwPy4A3-gETaQ-Q';
         
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -278,7 +278,7 @@
             
             if (isUploading) return;
             if (selectedFiles.length === 0) {
-                showNotification('⚠️ Kam az kam ek image chahiye!', 'error');
+                showNotification('️ Kam az kam ek image chahiye!', 'error');
                 return;
             }
             
