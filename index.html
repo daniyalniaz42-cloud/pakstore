@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PakStore - Hub</title>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <title>PakStore - Shop</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
@@ -79,7 +78,7 @@
         <div class="search-section">
             <div class="search-wrapper">
                 <span class="search-icon-left">🔍</span>
-                <input type="text" id="store-search-field" oninput="triggerSearch()" placeholder="Search product names...">
+                <input type="text" id="store-search-field" oninput="triggerSearch()" placeholder="Search products...">
             </div>
         </div>
 
@@ -99,7 +98,7 @@
         <div class="cart-panel" id="cart-section">
             <div class="cart-header">
                 <span>🛒 Selected Products</span>
-                <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">🗑️ Clear All</span>
+                <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">🗑️ Clear</span>
             </div>
             <div id="basket-items-container">
                 <p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>
@@ -111,8 +110,8 @@
 
             <form onsubmit="placeOrder(event)" class="checkout-form">
                 <input type="text" id="cust-name" placeholder="Full Name" required>
-                <input type="tel" id="cust-phone" placeholder="WhatsApp Number (e.g., 03001234567)" required>
-                <textarea id="cust-address" placeholder="Complete Delivery Address" rows="2" required></textarea>
+                <input type="tel" id="cust-phone" placeholder="WhatsApp Number" required>
+                <textarea id="cust-address" placeholder="Delivery Address" rows="2" required></textarea>
                 <button type="submit" class="btn-order-trigger">✅ Confirm Order</button>
             </form>
         </div>
@@ -125,18 +124,11 @@
     </div>
 
     <script>
-        // FIREBASE CONNECTIVITY CONFIG
-        const firebaseConfig = {
-            apiKey: "AIzaSyAf6-Z11aoBDCHeKt1M-8v_4ql6yBzPqwY",
-            authDomain: "pakstore-db-29eff.firebaseapp.com",
-            databaseURL: "https://pakstore-db-29eff-default-rtdb.firebaseio.com",
-            projectId: "pakstore-db-29eff",
-            storageBucket: "pakstore-db-29eff.firebasestorage.app",
-            messagingSenderId: "553423977932",
-            appId: "1:553423977932:web:e9a41935cf6e5fde887169"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // ⚠️ YAHAN APNI SUPABASE DETAILS DALEIN (same as admin)
+        const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+        const SUPABASE_KEY = 'YOUR_ANON_PUBLIC_KEY';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let shoppingCart = [];
         let rootVertical = 'all';
@@ -146,27 +138,37 @@
         let masterList = [];
 
         window.onload = function() {
-            database.ref('products').on('value', (snapshot) => {
-                const data = snapshot.val();
-                masterList = data ? Object.keys(data).map(key => ({ firebaseKey: key, ...data[key] })) : [];
-                renderGlobalCatalog();
-            }, (error) => {
-                console.error('Products read error:', error);
-                document.getElementById('products-render-target').innerHTML = 
-                    `<p class="empty-products" style="color:#ef4444;">Error loading products: ${error.message}</p>`;
-            });
+            loadProducts();
         };
 
+        async function loadProducts() {
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('id', { ascending: false });
+                
+                if (error) throw error;
+                
+                masterList = data ? data.map(p => ({ ...p, id: p.id })) : [];
+                renderGlobalCatalog();
+            } catch (err) {
+                console.error('Error:', err);
+                document.getElementById('products-render-target').innerHTML = 
+                    `<p class="empty-products" style="color:#ef4444;">Error loading products</p>`;
+            }
+        }
+
         function selectRootVertical(type) {
-            rootVertical = type; 
+            rootVertical = type;
             subCategoryFilter = 'all';
             document.querySelectorAll('.tab-node').forEach(n => n.classList.remove('active'));
             document.getElementById(`tab-${type}`).classList.add('active');
             const subPanel = document.getElementById('subcat-container-panel');
             
-            if (type === 'all') { 
-                subPanel.style.display = 'none'; 
-                document.getElementById('catalog-header-text').innerText = "All Available Stock"; 
+            if (type === 'all') {
+                subPanel.style.display = 'none';
+                document.getElementById('catalog-header-text').innerText = "All Available Stock";
             } else if (type === 'fashion') {
                 subPanel.style.display = 'block';
                 subPanel.innerHTML = `
@@ -209,14 +211,14 @@
             if (textSearchPattern) workingSet = workingSet.filter(p => p.name.toLowerCase().includes(textSearchPattern.toLowerCase()));
 
             if (workingSet.length === 0) {
-                grid.innerHTML = `<p class="empty-products">Is section me koi product mojood nahi hai.</p>`;
+                grid.innerHTML = `<p class="empty-products">Is section me koi product nahi hai.</p>`;
                 return;
             }
 
             grid.innerHTML = workingSet.map(p => {
                 if (sliderPositions[p.id] === undefined) sliderPositions[p.id] = 0;
                 const images = (p.images && p.images.length > 0) ? p.images.slice(0, 10) : [null];
-                let slidesHTML = images.map(src => `<div class="carousel-slide">${src ? `<img src="${src}" onerror="this.parentElement.innerHTML='📦'">` : '📦'}</div>`).join('');
+                let slidesHTML = images.map(src => `<div class="carousel-slide">${src ? `<img src="${src}" onerror="this.parentElement.innerHTML='📦'">` : ''}</div>`).join('');
                 let dotsHTML = images.length > 1 ? `<div class="carousel-dots" id="dots-${p.id}">${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}</div>` : '';
                 let navHTML = images.length > 1 ? `<button class="carousel-btn prev" onclick="cycleImg(${p.id}, -1, ${images.length})">❮</button><button class="carousel-btn next" onclick="cycleImg(${p.id}, 1, ${images.length})">❯</button>` : '';
                 let sizeHTML = p.hasSize === 'yes' ? `<div class="size-box"><label>Select Size</label><select class="size-select" id="size-box-${p.id}"><option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option></select></div>` : '';
@@ -225,7 +227,7 @@
                     <div class="product-card">
                         <div class="product-image-carousel">${navHTML}<div class="carousel-track" id="track-${p.id}">${slidesHTML}</div>${dotsHTML}</div>
                         <h3 class="product-title">${p.name}</h3>
-                        <p class="product-desc">${p.desc}</p>
+                        <p class="product-desc">${p.description}</p>
                         ${sizeHTML}
                         <div class="card-meta">
                             <span class="card-price">Rs. ${p.price}</span>
@@ -244,19 +246,19 @@
             dots.forEach((d, idx) => d.classList.toggle('active', idx === sliderPositions[pid]));
         }
 
-        function triggerSearch() { 
-            textSearchPattern = document.getElementById('store-search-field').value.trim(); 
-            renderGlobalCatalog(); 
+        function triggerSearch() {
+            textSearchPattern = document.getElementById('store-search-field').value.trim();
+            renderGlobalCatalog();
         }
-        
+
         function pushToBasket(id, name, price, sizeVar) {
-            let label = name; 
-            if (sizeVar === 'yes') { 
+            let label = name;
+            if (sizeVar === 'yes') {
                 const sizeBox = document.getElementById(`size-box-${id}`);
-                label += ` (${sizeBox ? sizeBox.value : 'M'})`; 
+                label += ` (${sizeBox ? sizeBox.value : 'M'})`;
             }
-            const match = shoppingCart.find(i => i.label === label); 
-            if (match) match.qty++; 
+            const match = shoppingCart.find(i => i.label === label);
+            if (match) match.qty++;
             else shoppingCart.push({ label, price, qty: 1 });
             updateBasketUi();
         }
@@ -264,29 +266,29 @@
         function updateBasketUi() {
             document.getElementById('cart-counter-badge').innerText = shoppingCart.reduce((sum, item) => sum + item.qty, 0);
             const container = document.getElementById('basket-items-container');
-            if (shoppingCart.length === 0) { 
-                container.innerHTML = '<p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>'; 
-                document.getElementById('basket-total-sum').innerText = "Rs. 0"; 
-                return; 
+            if (shoppingCart.length === 0) {
+                container.innerHTML = '<p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>';
+                document.getElementById('basket-total-sum').innerText = "Rs. 0";
+                return;
             }
             container.innerHTML = shoppingCart.map(i => `<div class="cart-item-row"><div><strong>${i.label}</strong><br><span style="color:#64748b;">Rs. ${i.price} x ${i.qty}</span></div><span style="font-weight:700;">Rs. ${i.price * i.qty}</span></div>`).join('');
             let grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             document.getElementById('basket-total-sum').innerText = `Rs. ${grandTotal}`;
         }
 
-        function wipeCart() { 
+        function wipeCart() {
             if (shoppingCart.length === 0) return;
-            if (confirm("Clear all items from basket?")) {
-                shoppingCart = []; 
+            if (confirm("Clear basket?")) {
+                shoppingCart = [];
                 updateBasketUi();
             }
         }
 
-        function placeOrder(e) {
+        async function placeOrder(e) {
             e.preventDefault();
-            if (shoppingCart.length === 0) { 
-                alert('⚠️ Basket empty hai! Kuch add karein pehle.'); 
-                return; 
+            if (shoppingCart.length === 0) {
+                alert('⚠️ Basket empty hai!');
+                return;
             }
             
             const btn = e.target.querySelector('button[type="submit"]');
@@ -297,31 +299,32 @@
             const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             
             const orderPayload = {
-                id: orderId,
-                customerName: document.getElementById('cust-name').value.trim(),
-                customerPhone: document.getElementById('cust-phone').value.trim(),
-                customerAddress: document.getElementById('cust-address').value.trim(),
+                order_id: orderId,
+                customer_name: document.getElementById('cust-name').value.trim(),
+                customer_phone: document.getElementById('cust-phone').value.trim(),
+                customer_address: document.getElementById('cust-address').value.trim(),
                 items: [...shoppingCart],
                 total: grandTotal,
-                status: 'Pending',
-                date: new Date().toLocaleString('en-PK')
+                status: 'Pending'
             };
 
-            database.ref('orders').push(orderPayload)
-                .then(() => {
-                    alert(`🎉 Order Confirmed Securely!\n\n📦 Order ID: ${orderId}\n💰 Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
-                    wipeCart();
-                    e.target.reset();
-                })
-                .catch(err => {
-                    alert("❌ Error saving order: " + err.message);
-                    btn.disabled = false;
-                    btn.innerText = '✅ Confirm Order';
-                });
+            try {
+                const { error } = await supabase.from('orders').insert(orderPayload);
+                
+                if (error) throw error;
+                
+                alert(`🎉 Order Confirmed!\n\n Order ID: ${orderId}\n💰 Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
+                wipeCart();
+                e.target.reset();
+            } catch (err) {
+                alert(" Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = '✅ Confirm Order';
+            }
         }
 
-        function scrollToId(id) { 
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); 
+        function scrollToId(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
     </script>
 </body>
