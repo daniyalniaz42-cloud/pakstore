@@ -22,29 +22,37 @@
         .preview-wrapper { position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
         .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .remove-img-btn { position: absolute; top: 2px; right: 2px; background: rgba(224, 36, 36, 0.9); color: white; border: none; width: 16px; height: 16px; font-size: 10px; font-weight: bold; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.3s; }
         .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
-        .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; overflow: hidden; display: none; }
-        .progress-fill { height: 100%; background: #1a56db; width: 0%; transition: width 0.3s; }
+        .btn-submit:hover:not(:disabled) { background: #1e429f; }
+        .progress-container { margin-top: 12px; display: none; }
+        .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #1a56db, #0e9f6e); width: 0%; transition: width 0.3s; }
         .status-msg { font-size: 12px; color: #64748b; margin-top: 6px; text-align: center; }
+        .status-msg.error { color: #ef4444; }
+        .status-msg.success { color: #0e9f6e; }
         .inventory-title { font-size: 15px; font-weight: 700; margin-top: 12px; margin-bottom: 12px; color: #334155; display: flex; justify-content: space-between; align-items: center; }
-        .inventory-list { display: flex; flex-direction: column; gap: 10px; }
+        .inventory-list { display: flex; flex-direction: column; gap: 10px; max-height: 500px; overflow-y: auto; }
         .inventory-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .item-info { display: flex; align-items: center; gap: 10px; }
+        .item-info { display: flex; align-items: center; gap: 10px; flex: 1; }
         .item-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; background: #e2e8f0; }
         .item-details h4 { font-size: 13px; font-weight: 700; color: #1e293b; }
         .item-details p { font-size: 11px; color: #64748b; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-delete:hover { background: #fecaca; }
         .order-card { background: #fafafa; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
         .order-meta-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; }
         .order-items-list { font-size: 13px; color: #1e293b; padding-left: 14px; margin-bottom: 8px; }
+        .empty-state { text-align: center; color: #94a3b8; font-size: 12px; padding: 20px 0; }
+        .loader { display: inline-block; width: 16px; height: 16px; border: 2px solid #ffffff; border-radius: 50%; border-top-color: transparent; animation: spin 0.8s linear infinite; margin-right: 6px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div class="admin-box">
         <h1>⚙️ Store Inventory Console (Cloud Secured)</h1>
-        <p class="subtitle">Realtime server par direct data upload karein</p>
+        <p class="subtitle">Realtime server par direct data upload karein via Firebase Storage</p>
 
         <form id="product-addition-form" onsubmit="handleFormSubmission(event)">
             <div class="form-group">
@@ -65,39 +73,46 @@
             <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>
                     <label>Retail Price (Rs.)</label>
-                    <input type="number" id="prod-price" required>
+                    <input type="number" id="prod-price" min="1" required>
                 </div>
                 <div>
                     <label>Size Variant Box?</label>
                     <select id="prod-size-needed">
                         <option value="no">No Sizes</option>
-                        <option value="yes">Enable Sizes</option>
+                        <option value="yes">Enable Sizes (S, M, L, XL)</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
                 <label>Product Description</label>
-                <textarea id="prod-desc" rows="3" required></textarea>
+                <textarea id="prod-desc" rows="3" placeholder="Product ki tafseelat..." required></textarea>
             </div>
             <div class="form-group">
-                <label>Upload Images (Max 10) - Stored on Firebase Storage</label>
+                <label>Upload Images (Max 10 - Each max 5MB)</label>
                 <div class="upload-zone">
-                    <p>📸 Select Images</p>
+                    <p>📸 Select Images (Click or Drag)</p>
                     <input type="file" id="image-file-input" accept="image/*" multiple onchange="processMultipleImages(event)">
                 </div>
                 <div class="preview-grid" id="image-previews-container"></div>
             </div>
             
-            <div class="progress-bar" id="upload-progress-bar">
-                <div class="progress-fill" id="upload-progress-fill"></div>
+            <div class="progress-container" id="upload-progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="upload-progress-fill"></div>
+                </div>
+                <div class="status-msg" id="upload-status-msg">Preparing...</div>
             </div>
-            <div class="status-msg" id="upload-status-msg"></div>
             
             <button type="submit" class="btn-submit" id="submit-btn">Publish Product</button>
         </form>
 
-        <div class="inventory-title">📦 Cloud Active Products</div>
-        <div class="inventory-list" id="admin-inventory-target"></div>
+        <div class="inventory-title">
+            <span>📦 Cloud Active Products</span>
+            <button class="btn-delete" style="background:#fef3c7; color:#d97706;" onclick="clearAllProducts()">Clear All</button>
+        </div>
+        <div class="inventory-list" id="admin-inventory-target">
+            <div class="empty-state">Loading products...</div>
+        </div>
     </div>
 
     <div class="admin-box" style="border-top: 4px solid #0e9f6e;">
@@ -105,7 +120,9 @@
             <span>📥 Received Orders Log (Permanent Server)</span>
             <button class="btn-delete" style="background:#e2e8f0; color:#475569;" onclick="clearAllOrdersTrack()">Wipe All</button>
         </div>
-        <div id="admin-orders-target-node"></div>
+        <div id="admin-orders-target-node">
+            <div class="empty-state">Loading orders...</div>
+        </div>
     </div>
 
     <script>
@@ -124,100 +141,167 @@
         const storage = firebase.storage();
 
         let selectedImageFiles = [];
+        let isUploading = false;
 
+        // Initialize page
         window.onload = function() {
-            // Read Products Realtime
+            // Listen for Products changes
             database.ref('products').on('value', (snapshot) => {
-                const products = snapshot.val();
-                const container = document.getElementById('admin-inventory-target');
-                if(!products) { container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:12px 0;">No active items.</p>`; return; }
-                
-                container.innerHTML = Object.keys(products).map(key => {
-                    const p = products[key];
-                    const firstImg = (p.images && p.images.length > 0) ? p.images[0] : '';
-                    return `
-                        <div class="inventory-item">
-                            <div class="item-info">
-                                <img src="${firstImg}" class="item-thumb" onerror="this.style.background='#e2e8f0'">
-                                <div class="item-details"><h4>${p.name}</h4><p>Rs. ${p.price}</p></div>
-                            </div>
-                            <button class="btn-delete" onclick="removeProductNode('${key}')">Remove</button>
-                        </div>`;
-                }).join('');
+                renderProducts(snapshot.val());
+            }, (error) => {
+                console.error('Products read error:', error);
+                document.getElementById('admin-inventory-target').innerHTML = 
+                    `<div class="empty-state" style="color:#ef4444;">Error loading: ${error.message}</div>`;
             });
 
-            // Read Orders Realtime
+            // Listen for Orders changes
             database.ref('orders').on('value', (snapshot) => {
-                const orders = snapshot.val();
-                const target = document.getElementById('admin-orders-target-node');
-                if(!orders) { target.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:20px 0;">Koi order nahi mila.</p>`; return; }
-                
-                target.innerHTML = Object.keys(orders).map(key => {
-                    const o = orders[key];
-                    let itemsSummary = o.items.map(i => `<li>${i.label} <strong>(x${i.qty})</strong></li>`).join('');
-                    return `
-                        <div class="order-card">
-                            <div class="order-meta-header"><span>ID: ${o.id}</span><span>📅 ${o.date}</span></div>
-                            <p style="font-size:13px;">👤 <strong>Customer:</strong> ${o.customerName}</p>
-                            <p style="font-size:13px;">📞 <strong>WhatsApp:</strong> <a href="https://wa.me/${o.customerPhone}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customerPhone}</a></p>
-                            <p style="font-size:13px; margin-bottom:8px;">📍 <strong>Address:</strong> ${o.customerAddress}</p>
-                            <div style="background:white; padding:8px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;"><ul class="order-items-list">${itemsSummary}</ul></div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:14px; font-weight:800; color:#1a56db;">Total: Rs. ${o.total}</span>
-                                <button class="btn-delete" onclick="deleteSpecificOrderNode('${key}')">Complete / Remove</button>
-                            </div>
-                        </div>`;
-                }).join('');
+                renderOrders(snapshot.val());
+            }, (error) => {
+                console.error('Orders read error:', error);
+                document.getElementById('admin-orders-target-node').innerHTML = 
+                    `<div class="empty-state" style="color:#ef4444;">Error loading: ${error.message}</div>`;
             });
         };
 
+        function renderProducts(products) {
+            const container = document.getElementById('admin-inventory-target');
+            
+            if (!products) { 
+                container.innerHTML = '<div class="empty-state">No active products. Add your first product above!</div>'; 
+                return; 
+            }
+            
+            const productKeys = Object.keys(products);
+            container.innerHTML = productKeys.reverse().map(key => {
+                const p = products[key];
+                const firstImg = (p.images && p.images.length > 0) ? p.images[0] : '';
+                return `
+                    <div class="inventory-item">
+                        <div class="item-info">
+                            ${firstImg ? `<img src="${firstImg}" class="item-thumb" onerror="this.style.background='#e2e8f0'">` : '<div class="item-thumb"></div>'}
+                            <div class="item-details">
+                                <h4>${p.name}</h4>
+                                <p>Rs. ${p.price} | ${p.root}/${p.sub}</p>
+                            </div>
+                        </div>
+                        <button class="btn-delete" onclick="removeProductNode('${key}')">🗑️ Remove</button>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderOrders(orders) {
+            const target = document.getElementById('admin-orders-target-node');
+            
+            if (!orders) { 
+                target.innerHTML = '<div class="empty-state">No orders received yet.</div>'; 
+                return; 
+            }
+            
+            const orderKeys = Object.keys(orders);
+            target.innerHTML = orderKeys.reverse().map(key => {
+                const o = orders[key];
+                let itemsSummary = o.items.map(i => `<li>${i.label} <strong>(x${i.qty})</strong> = Rs. ${i.price * i.qty}</li>`).join('');
+                return `
+                    <div class="order-card">
+                        <div class="order-meta-header">
+                            <span>🆔 Order: ${o.id}</span>
+                            <span>📅 ${o.date}</span>
+                        </div>
+                        <p style="font-size:13px; margin-bottom:4px;">👤 <strong>Customer:</strong> ${o.customerName}</p>
+                        <p style="font-size:13px; margin-bottom:4px;">📞 <strong>WhatsApp:</strong> <a href="https://wa.me/92${o.customerPhone.replace(/^0/, '')}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customerPhone}</a></p>
+                        <p style="font-size:13px; margin-bottom:8px;">📍 <strong>Address:</strong> ${o.customerAddress}</p>
+                        <div style="background:white; padding:8px 8px 8px 20px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
+                            <ul class="order-items-list">${itemsSummary}</ul>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:14px; font-weight:800; color:#1a56db;">💰 Total: Rs. ${o.total}</span>
+                            <button class="btn-delete" onclick="deleteSpecificOrderNode('${key}')">✅ Complete</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
         function removeProductNode(key) { 
-            if(confirm("Delete this product?")) { 
+            if (confirm("Delete this product permanently?")) { 
                 database.ref('products/' + key).remove()
-                    .then(() => alert("Product deleted!"))
-                    .catch(err => alert("Delete error: " + err.message)); 
+                    .then(() => showNotification("Product deleted successfully!", "success"))
+                    .catch(err => showNotification("Error: " + err.message, "error")); 
             } 
+        }
+
+        function clearAllProducts() {
+            if (confirm("⚠️ WARNING: This will DELETE ALL products. Are you sure?")) {
+                if (confirm("Last chance - Really delete everything?")) {
+                    database.ref('products').remove()
+                        .then(() => showNotification("All products cleared!", "success"))
+                        .catch(err => showNotification("Error: " + err.message, "error"));
+                }
+            }
         }
         
         function deleteSpecificOrderNode(key) { 
-            if(confirm("Mark order as completed/removed?")) { 
-                database.ref('orders/' + key).remove(); 
+            if (confirm("Mark order as completed and remove from logs?")) { 
+                database.ref('orders/' + key).remove()
+                    .then(() => showNotification("Order completed!", "success"))
+                    .catch(err => showNotification("Error: " + err.message, "error")); 
             } 
         }
         
         function clearAllOrdersTrack() { 
-            if(confirm("Wipe all logs from server permanently?")) { 
-                database.ref('orders').remove(); 
+            if (confirm("Wipe ALL order logs from server permanently?")) { 
+                database.ref('orders').remove()
+                    .then(() => showNotification("All orders cleared!", "success"))
+                    .catch(err => showNotification("Error: " + err.message, "error")); 
             } 
         }
 
         function processMultipleImages(event) {
             const files = event.target.files;
             const remainingSlots = 10 - selectedImageFiles.length;
+            
+            if (remainingSlots <= 0) {
+                showNotification("Maximum 10 images allowed!", "error");
+                return;
+            }
+            
             const filesToAdd = Array.from(files).slice(0, remainingSlots);
             
             filesToAdd.forEach(file => {
                 // Validate file size (max 5MB per image)
-                if(file.size > 5 * 1024 * 1024) {
-                    alert(`File "${file.name}" is too large (max 5MB). Skipped.`);
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification(`"${file.name}" is too large (max 5MB). Skipped.`, "error");
                     return;
                 }
+                
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showNotification(`"${file.name}" is not an image. Skipped.`, "error");
+                    return;
+                }
+                
                 selectedImageFiles.push(file);
             });
             
             renderThumbnailsLayout();
+            event.target.value = ''; // Reset input
         }
 
         function renderThumbnailsLayout() {
             const container = document.getElementById('image-previews-container');
             container.innerHTML = '';
             
+            if (selectedImageFiles.length === 0) return;
+            
             selectedImageFiles.forEach((file, idx) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const div = document.createElement('div');
                     div.className = 'preview-wrapper';
-                    div.innerHTML = `<img src="${e.target.result}"><button type="button" class="remove-img-btn" onclick="removeImageAt(${idx})">×</button>`;
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview ${idx + 1}">
+                        <button type="button" class="remove-img-btn" onclick="removeImageAt(${idx})" title="Remove">×</button>
+                    `;
                     container.appendChild(div);
                 };
                 reader.readAsDataURL(file);
@@ -229,65 +313,80 @@
             renderThumbnailsLayout();
         }
 
-        // Upload single image to Firebase Storage and return download URL
-        function uploadImageToStorage(file, productId) {
+        // Upload single image to Firebase Storage
+        function uploadImageToStorage(file, productId, index, total) {
             return new Promise((resolve, reject) => {
-                const fileName = `${productId}_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                const fileName = `${productId}_${Date.now()}_${index}_${file.name.replace(/\s/g, '_').substring(0, 50)}`;
                 const storageRef = storage.ref(`products/${productId}/${fileName}`);
                 const uploadTask = storageRef.put(file);
 
                 uploadTask.on('state_changed',
                     (snapshot) => {
-                        // Progress can be tracked here if needed
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        updateProgress(((index / total) + (progress / 100 / total)) * 100);
+                        updateStatus(`Uploading image ${index + 1} of ${total} (${Math.round(progress)}%)...`);
                     },
-                    (error) => reject(error),
+                    (error) => {
+                        reject(error);
+                    },
                     () => {
-                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                            resolve(downloadURL);
-                        }).catch(reject);
+                        uploadTask.snapshot.ref.getDownloadURL()
+                            .then((downloadURL) => {
+                                resolve(downloadURL);
+                            })
+                            .catch(reject);
                     }
                 );
             });
         }
 
+        function updateProgress(percentage) {
+            document.getElementById('upload-progress-fill').style.width = `${Math.min(100, percentage)}%`;
+        }
+
+        function updateStatus(message, type = '') {
+            const statusMsg = document.getElementById('upload-status-msg');
+            statusMsg.innerText = message;
+            statusMsg.className = 'status-msg ' + type;
+        }
+
         async function handleFormSubmission(e) {
             e.preventDefault();
             
-            if(selectedImageFiles.length === 0) { 
-                alert("Kam az kam ek image lazmi hai!"); 
+            if (isUploading) return;
+            
+            if (selectedImageFiles.length === 0) { 
+                showNotification("⚠️ Kam az kam ek image lazmi hai!", "error"); 
                 return; 
             }
             
             const submitBtn = document.getElementById('submit-btn');
-            const progressBar = document.getElementById('upload-progress-bar');
-            const progressFill = document.getElementById('upload-progress-fill');
-            const statusMsg = document.getElementById('upload-status-msg');
+            const progressContainer = document.getElementById('upload-progress-container');
             
+            isUploading = true;
             submitBtn.disabled = true;
-            submitBtn.innerText = "Uploading...";
-            progressBar.style.display = 'block';
-            statusMsg.innerText = "Starting upload...";
+            submitBtn.innerHTML = '<span class="loader"></span>Uploading...';
+            progressContainer.style.display = 'block';
+            updateProgress(0);
+            updateStatus('Starting upload...');
             
             try {
                 const placementValue = document.getElementById('prod-placement').value.split('|');
                 const productId = 'prod_' + Date.now();
                 
-                // Upload all images to Firebase Storage
-                statusMsg.innerText = `Uploading ${selectedImageFiles.length} image(s) to cloud storage...`;
+                // Step 1: Upload all images to Firebase Storage
+                updateStatus(`Uploading ${selectedImageFiles.length} image(s) to cloud...`);
                 const imageUrls = [];
                 
-                for(let i = 0; i < selectedImageFiles.length; i++) {
-                    statusMsg.innerText = `Uploading image ${i + 1} of ${selectedImageFiles.length}...`;
-                    progressFill.style.width = `${((i) / selectedImageFiles.length) * 100}%`;
-                    
-                    const url = await uploadImageToStorage(selectedImageFiles[i], productId);
+                for (let i = 0; i < selectedImageFiles.length; i++) {
+                    const url = await uploadImageToStorage(selectedImageFiles[i], productId, i, selectedImageFiles.length);
                     imageUrls.push(url);
                 }
                 
-                progressFill.style.width = '90%';
-                statusMsg.innerText = "Saving product details to database...";
+                updateProgress(90);
+                updateStatus('Saving product details to database...');
                 
-                // Save product data to Realtime Database (only URLs, not base64!)
+                // Step 2: Save product data to Realtime Database
                 const item = {
                     id: Date.now(),
                     name: document.getElementById('prod-name').value.trim(),
@@ -296,15 +395,16 @@
                     price: parseInt(document.getElementById('prod-price').value),
                     hasSize: document.getElementById('prod-size-needed').value,
                     desc: document.getElementById('prod-desc').value.trim(),
-                    images: imageUrls
+                    images: imageUrls,
+                    createdAt: new Date().toISOString()
                 };
 
                 await database.ref('products/' + productId).set(item);
                 
-                progressFill.style.width = '100%';
-                statusMsg.innerText = "✅ Product published successfully!";
+                updateProgress(100);
+                updateStatus('✅ Product published successfully!', 'success');
                 
-                alert("🎉 Product Uploaded & Secured on Google Cloud!");
+                showNotification("🎉 Product Uploaded Successfully!", "success");
                 
                 // Reset form
                 document.getElementById('product-addition-form').reset();
@@ -312,21 +412,54 @@
                 renderThumbnailsLayout();
                 
                 setTimeout(() => {
-                    progressBar.style.display = 'none';
-                    progressFill.style.width = '0%';
-                    statusMsg.innerText = '';
+                    progressContainer.style.display = 'none';
+                    updateProgress(0);
+                    isUploading = false;
                     submitBtn.disabled = false;
-                    submitBtn.innerText = 'Publish Product';
-                }, 2000);
+                    submitBtn.innerHTML = 'Publish Product';
+                }, 2500);
                 
             } catch (error) {
                 console.error("Upload error:", error);
-                statusMsg.innerText = "❌ Error: " + error.message;
-                alert("Upload failed: " + error.message);
+                updateStatus('❌ Error: ' + error.message, 'error');
+                showNotification("Upload failed: " + error.message, "error");
+                
+                isUploading = false;
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Publish Product';
+                submitBtn.innerHTML = 'Publish Product';
+                
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 3000);
             }
         }
+
+        function showNotification(message, type) {
+            // Simple notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; z-index: 9999;
+                background: ${type === 'success' ? '#0e9f6e' : '#ef4444'};
+                color: white; padding: 12px 20px; border-radius: 8px;
+                font-size: 14px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease;
+            `;
+            notification.innerText = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(400px); opacity: 0; } }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
