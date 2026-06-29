@@ -65,7 +65,7 @@
                     <option value="fashion|men-clothes">👕 Men's Clothes</option>
                     <option value="fashion|men-watches">⌚ Men's Watches</option>
                     <option value="fashion|women-clothes">👗 Women's Clothes</option>
-                    <option value="fashion|women-jewellery"> Women's Jewellery</option>
+                    <option value="fashion|women-jewellery">💍 Women's Jewellery</option>
                     <option value="electronics|elec-audio">🎧 Audio & Earbuds</option>
                     <option value="electronics|elec-wearables">⌚ Smart Watches</option>
                 </select>
@@ -121,11 +121,11 @@
     </div>
 
     <script>
-        // ⚠️ YAHAN APNI SUPABASE DETAILS DALEIN
-        const SUPABASE_URL = 'sb_publishable_fxAi8Stbvmb4TAb5vyXNfQ_DWeMAC62';
+        // ✅ SUPABASE CREDENTIALS - Already filled
+        const SUPABASE_URL = 'https://mriodmlejaguxlnjjzkpv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaW9kbWxlamFndXhsbmp6a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MTA1OTQsImV4cCI6MjA5ODI4NjU5NH0.zwfpCiNrE_WUDxCJk0orMXKvzlbgTwPy4A3-gETaQ-Q';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let selectedFiles = [];
         let isUploading = false;
@@ -137,7 +137,7 @@
 
         async function loadProducts() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('products')
                     .select('*')
                     .order('id', { ascending: false });
@@ -174,7 +174,7 @@
 
         async function loadOrders() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('orders')
                     .select('*')
                     .order('id', { ascending: false });
@@ -196,7 +196,7 @@
                                 <span>🆔 ${o.order_id}</span>
                                 <span>📅 ${new Date(o.created_at).toLocaleString()}</span>
                             </div>
-                            <p style="font-size:13px; margin-bottom:4px;">👤 <strong>${o.customer_name}</strong></p>
+                            <p style="font-size:13px; margin-bottom:4px;"> <strong>${o.customer_name}</strong></p>
                             <p style="font-size:13px; margin-bottom:4px;">📞 <a href="https://wa.me/92${o.customer_phone.replace(/^0/, '')}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customer_phone}</a></p>
                             <p style="font-size:13px; margin-bottom:8px;">📍 ${o.customer_address}</p>
                             <div style="background:white; padding:8px 8px 8px 20px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
@@ -257,7 +257,7 @@
             const ext = file.name.split('.').pop();
             const fileName = `${productId}/${Date.now()}_${index}.${ext}`;
             
-            const { data, error } = await supabase.storage
+            const { data, error } = await supabaseClient.storage
                 .from('product-images')
                 .upload(fileName, file, {
                     cacheControl: '3600',
@@ -266,7 +266,7 @@
             
             if (error) throw error;
             
-            const { data: { publicUrl } } = supabase.storage
+            const { data: { publicUrl } } = supabaseClient.storage
                 .from('product-images')
                 .getPublicUrl(fileName);
             
@@ -278,7 +278,7 @@
             
             if (isUploading) return;
             if (selectedFiles.length === 0) {
-                showNotification('️ Kam az kam ek image chahiye!', 'error');
+                showNotification('⚠️ Kam az kam ek image chahiye!', 'error');
                 return;
             }
             
@@ -312,7 +312,7 @@
                 progressFill.style.width = '90%';
                 statusMsg.innerText = 'Saving product...';
                 
-                const { error } = await supabase.from('products').insert({
+                const { error } = await supabaseClient.from('products').insert({
                     name: document.getElementById('prod-name').value.trim(),
                     root: root,
                     sub: sub,
@@ -356,7 +356,7 @@
         async function deleteProduct(id) {
             if (!confirm('Delete this product?')) return;
             try {
-                const { error } = await supabase.from('products').delete().eq('id', id);
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
                 if (error) throw error;
                 showNotification('Product deleted!', 'success');
                 loadProducts();
@@ -368,7 +368,7 @@
         async function deleteOrder(id) {
             if (!confirm('Mark order as complete?')) return;
             try {
-                const { error } = await supabase.from('orders').delete().eq('id', id);
+                const { error } = await supabaseClient.from('orders').delete().eq('id', id);
                 if (error) throw error;
                 showNotification('Order completed!', 'success');
                 loadOrders();
@@ -380,7 +380,7 @@
         async function clearAllOrders() {
             if (!confirm('Delete ALL orders?')) return;
             try {
-                const { error } = await supabase.from('orders').delete().neq('id', 0);
+                const { error } = await supabaseClient.from('orders').delete().neq('id', 0);
                 if (error) throw error;
                 showNotification('All orders cleared!', 'success');
                 loadOrders();
