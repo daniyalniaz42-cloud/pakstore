@@ -27,7 +27,6 @@
         .tab-node { padding: 12px; text-align: center; background: #f1f5f9; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; }
         .tab-node.active { background: #1a56db; color: white; }
 
-        /* Subcategories Pill Section Layout */
         .subcat-wrapper-panel { background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 12px; padding: 12px 16px; display: none; }
         .subcat-group-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
         .subcat-flex-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
@@ -143,7 +142,6 @@
         let textSearchPattern = '';
         let sliderPositions = {};
 
-        // Default Mock Baseline Database
         const defaultStockRegistry = [
             { id: 101, name: "Men Unstitched Soft Cotton Wear", price: 1800, desc: "Premium wash n wear fabric bundle.", root: "fashion", sub: "men-clothes", hasSize: "no", images: ["https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400"] },
             { id: 102, name: "Men Luxury Chrono Quartz Watch", price: 2990, desc: "Waterproof sleek analog configuration watch.", root: "fashion", sub: "men-watches", hasSize: "no", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"] },
@@ -204,7 +202,6 @@
 
         function applySubFilter(element, subType) {
             subCategoryFilter = subType;
-            // Target specific pills inside the subcat flex layout container row safely
             element.parentElement.querySelectorAll('.subcat-pill').forEach(p => p.classList.remove('active'));
             element.classList.add('active');
             renderGlobalCatalog();
@@ -310,11 +307,32 @@
 
         function wipeCart() { shoppingCart = []; updateBasketUi(); }
 
+        // CORE FIX: Database submission logic inject ki gayi hai
         function placeOrder(e) {
             e.preventDefault();
             if(shoppingCart.length === 0) { alert('Basket empty hai!'); return; }
+            
             const orderId = 'PK-' + Math.floor(1000 + Math.random() * 9000);
-            alert(`🎉 Order Confirmed!\nOrder ID: ${orderId}`);
+            const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            
+            // Order details bundle banaya
+            const orderPayload = {
+                id: orderId,
+                customerName: document.getElementById('cust-name').value.trim(),
+                customerPhone: document.getElementById('cust-phone').value.trim(),
+                customerAddress: document.getElementById('cust-address').value.trim(),
+                items: [...shoppingCart],
+                total: grandTotal,
+                status: 'Pending',
+                date: new Date().toLocaleString()
+            };
+
+            // LocalStorage database me save kiya taake admin panel read kar sakay
+            let existingOrders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            existingOrders.push(orderPayload);
+            localStorage.setItem('pakstore_orders', JSON.stringify(existingOrders));
+
+            alert(`🎉 Order Confirmed!\nOrder ID: ${orderId}\nAdmin Panel me sync ho chuka hai.`);
             wipeCart();
             e.target.reset();
         }
