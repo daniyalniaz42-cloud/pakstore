@@ -166,42 +166,49 @@
         }
 
         async function loadOrders() {
-            try {
-                const response = await fetch(`${API_URL}?action=getOrders`);
-                const data = await response.json();
-                
-                const container = document.getElementById('orders-list');
-                if (!data.orders || data.orders.length === 0) {
-                    container.innerHTML = '<div class="empty-state">No orders yet.</div>';
-                    return;
-                }
-                
-                container.innerHTML = data.orders.map(o => {
-                    const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
-                    const itemsHTML = items.map(i => `<li>${i.label} <strong>(x${i.qty})</strong> = Rs. ${i.price * i.qty}</li>`).join('');
-                    return `
-                        <div class="order-card">
-                            <div class="order-meta-header">
-                                <span>🆔 ${o.order_id}</span>
-                                <span> ${new Date(o.created_at).toLocaleString()}</span>
-                            </div>
-                            <p style="font-size:13px; margin-bottom:4px;">👤 <strong>${o.customer_name}</strong></p>
-                            <p style="font-size:13px; margin-bottom:4px;"> <a href="https://wa.me/92${o.customer_phone.replace(/^0/, '')}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customer_phone}</a></p>
-                            <p style="font-size:13px; margin-bottom:8px;">📍 ${o.customer_address}</p>
-                            <div style="background:white; padding:8px 8px 8px 20px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
-                                <ul class="order-items-list">${itemsHTML}</ul>
-                            </div>
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:14px; font-weight:800; color:#1a56db;">💰 Rs. ${o.total}</span>
-                                <button class="btn-delete" onclick="deleteOrder('${o.order_id}')">✅ Done</button>
-                            </div>
-                        </div>`;
-                }).join('');
-            } catch (err) {
-                console.error('Error:', err);
-            }
+    try {
+        const response = await fetch(`${API_URL}?action=getOrders`);
+        const data = await response.json();
+        
+        const container = document.getElementById('orders-list');
+        if (!data.orders || data.orders.length === 0) {
+            container.innerHTML = '<div class="empty-state">No orders yet.</div>';
+            return;
         }
-
+        
+        container.innerHTML = data.orders.map(o => {
+            const items = typeof o.items === 'string' ? JSON.parse(o.items) : o.items;
+            const itemsHTML = items.map(i => `<li>${i.label} <strong>(x${i.qty})</strong> = Rs. ${i.price * i.qty}</li>`).join('');
+            
+            // ✅ FIXED: Convert phone to string first
+            const phone = String(o.customer_phone || '');
+            const cleanPhone = phone.replace(/^0/, '');
+            const waLink = `https://wa.me/92${cleanPhone}`;
+            
+            return `
+                <div class="order-card">
+                    <div class="order-meta-header">
+                        <span>🆔 ${o.order_id}</span>
+                        <span>📅 ${new Date(o.created_at).toLocaleString()}</span>
+                    </div>
+                    <p style="font-size:13px; margin-bottom:4px;">👤 <strong>${o.customer_name}</strong></p>
+                    <p style="font-size:13px; margin-bottom:4px;">📞 <a href="${waLink}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customer_phone}</a></p>
+                    <p style="font-size:13px; margin-bottom:8px;">📍 ${o.customer_address}</p>
+                    <div style="background:white; padding:8px 8px 8px 20px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
+                        <ul class="order-items-list">${itemsHTML}</ul>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:14px; font-weight:800; color:#1a56db;">💰 Rs. ${o.total}</span>
+                        <button class="btn-delete" onclick="deleteOrder('${o.order_id}')">✅ Done</button>
+                    </div>
+                </div>`;
+        }).join('');
+    } catch (err) {
+        console.error('Error loading orders:', err);
+        document.getElementById('orders-list').innerHTML = 
+            `<div class="empty-state" style="color:#ef4444;">Error: ${err.message}</div>`;
+    }
+}
         function handleImageSelect(event) {
             const files = Array.from(event.target.files);
             const remaining = 10 - selectedFiles.length;
