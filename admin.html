@@ -27,14 +27,14 @@
         
         .admin-prod-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
         .admin-prod-item { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-        .cat-tag { position: absolute; top: 8px; right: 8px; font-size: 10px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #475569;}
+        .cat-tag { position: absolute; top: 8px; right: 8px; font-size: 10px; background: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase;}
     </style>
 </head>
 <body onload="loadAdminDashboard()">
 
     <header>
         <h1 style="font-size: 18px;">PakStore Admin Control Desk</h1>
-        <span style="font-size:12px; color:#4ade80;">● Online Native Sync Active</span>
+        <span style="font-size:12px; color:#4ade80;">● Offline Native Sync Active</span>
     </header>
 
     <main class="container">
@@ -53,13 +53,15 @@
                 <div>
                     <span style="font-size:11px; font-weight:bold; color:#64748b;">Category</span>
                     <select id="p-category">
-                        <option value="electronic">Electronics</option>
+                        <option value="electronics">Electronics</option>
                         <option value="fashion">Fashion</option>
-                        <option value="etc">General / Etc</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="cosmetics">Cosmetics</option>
+                        <option value="groceries">Groceries</option>
                     </select>
                 </div>
                 <div>
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Size Feature?</span>
+                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Size Option?</span>
                     <select id="p-size-feature">
                         <option value="no">No Size Needed</option>
                         <option value="yes">Enable Sizes (S, M, L, XL)</option>
@@ -69,7 +71,7 @@
                     <span style="font-size:11px; font-weight:bold; color:#64748b;">Specification / Details</span>
                     <input type="text" id="p-desc" required>
                 </div>
-                <button type="submit" class="btn-blue" style="grid-column: auto;">Publish</button>
+                <button type="submit" class="btn-blue">Publish</button>
             </form>
 
             <h3 style="font-size: 13px; margin-top: 25px; color: #475569; font-weight: bold;">Current Live Products:</h3>
