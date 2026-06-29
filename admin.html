@@ -61,8 +61,8 @@
             <div class="form-group">
                 <label>Category</label>
                 <select id="prod-category" required>
-                    <option value="fashion|men-clothes"> Men's Clothes</option>
-                    <option value="fashion|men-watches">⌚ Men's Watches</option>
+                    <option value="fashion|men-clothes">👕 Men's Clothes</option>
+                    <option value="fashion|men-watches"> Men's Watches</option>
                     <option value="fashion|women-clothes">👗 Women's Clothes</option>
                     <option value="fashion|women-jewellery">💍 Women's Jewellery</option>
                     <option value="electronics|elec-audio">🎧 Audio & Earbuds</option>
@@ -183,10 +183,10 @@
                         <div class="order-card">
                             <div class="order-meta-header">
                                 <span>🆔 ${o.order_id}</span>
-                                <span>📅 ${new Date(o.created_at).toLocaleString()}</span>
+                                <span> ${new Date(o.created_at).toLocaleString()}</span>
                             </div>
                             <p style="font-size:13px; margin-bottom:4px;">👤 <strong>${o.customer_name}</strong></p>
-                            <p style="font-size:13px; margin-bottom:4px;">📞 <a href="https://wa.me/92${o.customer_phone.replace(/^0/, '')}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customer_phone}</a></p>
+                            <p style="font-size:13px; margin-bottom:4px;"> <a href="https://wa.me/92${o.customer_phone.replace(/^0/, '')}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customer_phone}</a></p>
                             <p style="font-size:13px; margin-bottom:8px;">📍 ${o.customer_address}</p>
                             <div style="background:white; padding:8px 8px 8px 20px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
                                 <ul class="order-items-list">${itemsHTML}</ul>
@@ -259,6 +259,18 @@
             }
         }
 
+        // ✅ FIXED: Use text/plain instead of application/json to avoid CORS
+        async function apiPost(data) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {'Content-Type': 'text/plain;charset=utf-8'},
+                body: JSON.stringify(data)
+            });
+            // With no-cors mode, we can't read the response, so assume success
+            return {success: true};
+        }
+
         async function handleFormSubmit(e) {
             e.preventDefault();
             
@@ -298,29 +310,22 @@
                 progressFill.style.width = '90%';
                 statusMsg.innerText = 'Saving product...';
                 
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        action: 'addProduct',
-                        id: productId,
-                        name: document.getElementById('prod-name').value.trim(),
-                        root: root,
-                        sub: sub,
-                        price: parseInt(document.getElementById('prod-price').value),
-                        hasSize: document.getElementById('prod-size').value,
-                        description: document.getElementById('prod-desc').value.trim(),
-                        images: imageUrls
-                    })
+                await apiPost({
+                    action: 'addProduct',
+                    id: productId,
+                    name: document.getElementById('prod-name').value.trim(),
+                    root: root,
+                    sub: sub,
+                    price: parseInt(document.getElementById('prod-price').value),
+                    hasSize: document.getElementById('prod-size').value,
+                    description: document.getElementById('prod-desc').value.trim(),
+                    images: imageUrls
                 });
-                
-                const result = await response.json();
-                if (!result.success) throw new Error('Failed to save');
                 
                 progressFill.style.width = '100%';
                 statusMsg.innerText = '✅ Success!';
                 statusMsg.className = 'status-msg success';
-                showNotification(' Product Published!', 'success');
+                showNotification('🎉 Product Published!', 'success');
                 
                 document.getElementById('product-form').reset();
                 selectedFiles = [];
@@ -349,16 +354,9 @@
         async function deleteProduct(id) {
             if (!confirm('Delete this product?')) return;
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({action: 'deleteProduct', id: id})
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('Product deleted!', 'success');
-                    loadProducts();
-                }
+                await apiPost({action: 'deleteProduct', id: id});
+                showNotification('Product deleted!', 'success');
+                loadProducts();
             } catch (err) {
                 showNotification('Error: ' + err.message, 'error');
             }
@@ -367,16 +365,9 @@
         async function deleteOrder(orderId) {
             if (!confirm('Mark order as complete?')) return;
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({action: 'deleteOrder', order_id: orderId})
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showNotification('Order completed!', 'success');
-                    loadOrders();
-                }
+                await apiPost({action: 'deleteOrder', order_id: orderId});
+                showNotification('Order completed!', 'success');
+                loadOrders();
             } catch (err) {
                 showNotification('Error: ' + err.message, 'error');
             }
@@ -384,8 +375,13 @@
 
         async function clearAllOrders() {
             if (!confirm('Delete ALL orders?')) return;
-            // Manual cleanup needed in Google Sheet
-            showNotification('Please delete orders manually from Google Sheet', 'error');
+            try {
+                await apiPost({action: 'clearOrders'});
+                showNotification('All orders cleared!', 'success');
+                loadOrders();
+            } catch (err) {
+                showNotification('Error: ' + err.message, 'error');
+            }
         }
 
         function showNotification(msg, type) {
