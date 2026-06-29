@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f1f5f9; color: #1e293b; padding: 24px 12px; }
-        .admin-box { max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; }
+        .admin-box { max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 24px; }
         h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
         .subtitle { font-size: 13px; color: #64748b; margin-bottom: 20px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px; }
         
@@ -26,7 +26,7 @@
 
         .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-        .inventory-title { font-size: 15px; font-weight: 700; margin-top: 24px; margin-bottom: 12px; color: #334155; }
+        .inventory-title { font-size: 15px; font-weight: 700; margin-top: 12px; margin-bottom: 12px; color: #334155; display: flex; justify-content: space-between; align-items: center; }
         .inventory-list { display: flex; flex-direction: column; gap: 10px; }
         .inventory-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
         .item-info { display: flex; align-items: center; gap: 10px; }
@@ -34,6 +34,11 @@
         .item-details h4 { font-size: 13px; font-weight: 700; color: #1e293b; }
         .item-details p { font-size: 11px; color: #64748b; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+
+        /* Order Panel Styles */
+        .order-card { background: #fafafa; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+        .order-meta-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px; }
+        .order-items-list { font-size: 13px; color: #1e293b; padding-left: 14px; margin-bottom: 8px; }
     </style>
 </head>
 <body>
@@ -43,7 +48,6 @@
         <p class="subtitle">Sahi category aur subcategory select karke product list karein</p>
 
         <form id="product-addition-form" onsubmit="handleFormSubmission(event)">
-            
             <div class="form-group">
                 <label>Product Name / Title</label>
                 <input type="text" id="prod-name" placeholder="e.g., Rolex Oyster Perpetual Black" required>
@@ -54,10 +58,8 @@
                 <select id="prod-placement" required>
                     <option value="fashion|men-clothes">👕 Men's Fashion - Clothes & Tracksuits</option>
                     <option value="fashion|men-watches">⌚ Men's Fashion - Watches</option>
-                    
                     <option value="fashion|women-clothes">👗 Women's Fashion - Clothes & Kurtis</option>
                     <option value="fashion|women-jewellery">💍 Women's Fashion - Jewellery</option>
-                    
                     <option value="electronics|elec-audio">🎧 Electronics - Audio & Pods</option>
                     <option value="electronics|elec-wearables">⌚ Electronics - Smart Wearables</option>
                 </select>
@@ -98,18 +100,25 @@
         <div class="inventory-list" id="admin-inventory-target"></div>
     </div>
 
+    <div class="admin-box" style="border-top: 4px solid #0e9f6e;">
+        <div class="inventory-title">
+            <span>📥 Received Orders Log</span>
+            <button class="btn-delete" style="background:#e2e8f0; color:#475569;" onclick="clearAllOrdersTrack()">Wipe Logs</button>
+        </div>
+        <p class="subtitle" style="margin-bottom:12px;">Customer ke place kiye huay orders yahan realtime show honge</p>
+        <div id="admin-orders-target-node"></div>
+    </div>
+
     <script>
         let uploadedImagesBase64 = [];
 
         function renderActiveInventory() {
             const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
             const container = document.getElementById('admin-inventory-target');
-            
             if(products.length === 0) {
                 container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:12px 0;">No active items found.</p>`;
                 return;
             }
-
             container.innerHTML = products.map(p => {
                 const firstImg = (p.images && p.images.length > 0) ? p.images[0] : '';
                 return `
@@ -118,13 +127,63 @@
                             <img src="${firstImg}" class="item-thumb">
                             <div class="item-details">
                                 <h4>${p.name}</h4>
-                                <p>Rs. ${p.price} | Target: ${p.root} -> ${p.sub}</p>
+                                <p>Rs. ${p.price} | ${p.root} -> ${p.sub}</p>
                             </div>
                         </div>
                         <button class="btn-delete" onclick="removeProductNode(${p.id})">Remove</button>
                     </div>
                 `;
             }).join('');
+        }
+
+        // NEW LOGIC: Renders client checkout payloads fetched dynamically 
+        function renderIncomingCustomerOrders() {
+            const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            const target = document.getElementById('admin-orders-target-node');
+
+            if(orders.length === 0) {
+                target.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:20px 0;">Koi bhi order abhi tak receive nahi hua.</p>`;
+                return;
+            }
+
+            target.innerHTML = orders.map((o, idx) => {
+                let itemsSummaryHTML = o.items.map(i => `<li>${i.label} <strong>(x${i.qty})</strong> - Rs. ${i.price * i.qty}</li>`).join('');
+                return `
+                    <div class="order-card">
+                        <div class="order-meta-header">
+                            <span>ID: ${o.id}</span>
+                            <span>📅 ${o.date}</span>
+                        </div>
+                        <p style="font-size:13px; margin-bottom:4px;">👤 <strong>Customer:</strong> ${o.customerName}</p>
+                        <p style="font-size:13px; margin-bottom:4px;">📞 <strong>WhatsApp:</strong> <a href="https://wa.me/${o.customerPhone}" target="_blank" style="color:#0e9f6e; font-weight:700;">${o.customerPhone}</a></p>
+                        <p style="font-size:13px; margin-bottom:8px;">📍 <strong>Address:</strong> ${o.customerAddress}</p>
+                        
+                        <div style="background:white; padding:8px; border-radius:6px; border:1px solid #e2e8f0; margin-bottom:8px;">
+                            <span style="font-size:11px; font-weight:bold; color:#64748b; display:block; text-transform:uppercase;">Ordered Items:</span>
+                            <ul class="order-items-list">${itemsSummaryHTML}</ul>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:between; align-items:center; justify-content: space-between;">
+                            <span style="font-size:14px; font-weight:800; color:#1a56db;">Total Bill: Rs. ${o.total}</span>
+                            <button class="btn-delete" onclick="deleteSpecificOrderNode(${idx})">Complete / Remove</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteSpecificOrderNode(index) {
+            let orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
+            orders.splice(index, 1);
+            localStorage.setItem('pakstore_orders', JSON.stringify(orders));
+            renderIncomingCustomerOrders();
+        }
+
+        function clearAllOrdersTrack() {
+            if(confirm("Kya aap tamam orders log clear karna chahte hain?")) {
+                localStorage.removeItem('pakstore_orders');
+                renderIncomingCustomerOrders();
+            }
         }
 
         function processMultipleImages(event) {
@@ -168,8 +227,8 @@
             const structuredProductObject = {
                 id: Date.now(),
                 name: document.getElementById('prod-name').value.trim(),
-                root: placementValue[0], // core tab (fashion/electronics)
-                sub: placementValue[1],  // lower subcategory filter node
+                root: placementValue[0],
+                sub: placementValue[1],
                 price: parseInt(document.getElementById('prod-price').value),
                 hasSize: document.getElementById('prod-size-needed').value,
                 desc: document.getElementById('prod-desc').value.trim(),
@@ -195,7 +254,10 @@
             }
         }
 
-        window.onload = renderActiveInventory;
+        window.onload = function() {
+            renderActiveInventory();
+            renderIncomingCustomerOrders();
+        };
     </script>
 </body>
 </html>
