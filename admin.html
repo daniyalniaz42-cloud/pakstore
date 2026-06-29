@@ -6,6 +6,7 @@
     <title>Store Management Desk - Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f1f5f9; color: #1e293b; padding: 24px 12px; }
@@ -22,6 +23,10 @@
         .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .remove-img-btn { position: absolute; top: 2px; right: 2px; background: rgba(224, 36, 36, 0.9); color: white; border: none; width: 16px; height: 16px; font-size: 10px; font-weight: bold; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+        .progress-bar { width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px; overflow: hidden; display: none; }
+        .progress-fill { height: 100%; background: #1a56db; width: 0%; transition: width 0.3s; }
+        .status-msg { font-size: 12px; color: #64748b; margin-top: 6px; text-align: center; }
         .inventory-title { font-size: 15px; font-weight: 700; margin-top: 12px; margin-bottom: 12px; color: #334155; display: flex; justify-content: space-between; align-items: center; }
         .inventory-list { display: flex; flex-direction: column; gap: 10px; }
         .inventory-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
@@ -75,14 +80,20 @@
                 <textarea id="prod-desc" rows="3" required></textarea>
             </div>
             <div class="form-group">
-                <label>Upload Images (Max 10)</label>
+                <label>Upload Images (Max 10) - Stored on Firebase Storage</label>
                 <div class="upload-zone">
                     <p>📸 Select Images</p>
                     <input type="file" id="image-file-input" accept="image/*" multiple onchange="processMultipleImages(event)">
                 </div>
                 <div class="preview-grid" id="image-previews-container"></div>
             </div>
-            <button type="submit" class="btn-submit">Publish Product</button>
+            
+            <div class="progress-bar" id="upload-progress-bar">
+                <div class="progress-fill" id="upload-progress-fill"></div>
+            </div>
+            <div class="status-msg" id="upload-status-msg"></div>
+            
+            <button type="submit" class="btn-submit" id="submit-btn">Publish Product</button>
         </form>
 
         <div class="inventory-title">📦 Cloud Active Products</div>
@@ -110,8 +121,9 @@
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const storage = firebase.storage();
 
-        let uploadedImagesBase64 = [];
+        let selectedImageFiles = [];
 
         window.onload = function() {
             // Read Products Realtime
@@ -126,7 +138,7 @@
                     return `
                         <div class="inventory-item">
                             <div class="item-info">
-                                <img src="${firstImg}" class="item-thumb">
+                                <img src="${firstImg}" class="item-thumb" onerror="this.style.background='#e2e8f0'">
                                 <div class="item-details"><h4>${p.name}</h4><p>Rs. ${p.price}</p></div>
                             </div>
                             <button class="btn-delete" onclick="removeProductNode('${key}')">Remove</button>
@@ -159,47 +171,161 @@
             });
         };
 
-        function removeProductNode(key) { if(confirm("Delete this product?")) { database.ref('products/' + key).remove(); } }
-        function deleteSpecificOrderNode(key) { if(confirm("Mark order as completed/removed?")) { database.ref('orders/' + key).remove(); } }
-        function clearAllOrdersTrack() { if(confirm("Wipe all logs from server permanently?")) { database.ref('orders').remove(); } }
+        function removeProductNode(key) { 
+            if(confirm("Delete this product?")) { 
+                database.ref('products/' + key).remove()
+                    .then(() => alert("Product deleted!"))
+                    .catch(err => alert("Delete error: " + err.message)); 
+            } 
+        }
+        
+        function deleteSpecificOrderNode(key) { 
+            if(confirm("Mark order as completed/removed?")) { 
+                database.ref('orders/' + key).remove(); 
+            } 
+        }
+        
+        function clearAllOrdersTrack() { 
+            if(confirm("Wipe all logs from server permanently?")) { 
+                database.ref('orders').remove(); 
+            } 
+        }
 
         function processMultipleImages(event) {
             const files = event.target.files;
-            const remainingSlots = 10 - uploadedImagesBase64.length;
-            Array.from(files).slice(0, remainingSlots).forEach(file => {
+            const remainingSlots = 10 - selectedImageFiles.length;
+            const filesToAdd = Array.from(files).slice(0, remainingSlots);
+            
+            filesToAdd.forEach(file => {
+                // Validate file size (max 5MB per image)
+                if(file.size > 5 * 1024 * 1024) {
+                    alert(`File "${file.name}" is too large (max 5MB). Skipped.`);
+                    return;
+                }
+                selectedImageFiles.push(file);
+            });
+            
+            renderThumbnailsLayout();
+        }
+
+        function renderThumbnailsLayout() {
+            const container = document.getElementById('image-previews-container');
+            container.innerHTML = '';
+            
+            selectedImageFiles.forEach((file, idx) => {
                 const reader = new FileReader();
-                reader.onload = function(e) { uploadedImagesBase64.push(e.target.result); renderThumbnailsLayout(); };
+                reader.onload = function(e) {
+                    const div = document.createElement('div');
+                    div.className = 'preview-wrapper';
+                    div.innerHTML = `<img src="${e.target.result}"><button type="button" class="remove-img-btn" onclick="removeImageAt(${idx})">×</button>`;
+                    container.appendChild(div);
+                };
                 reader.readAsDataURL(file);
             });
         }
 
-        function renderThumbnailsLayout() {
-            document.getElementById('image-previews-container').innerHTML = uploadedImagesBase64.map((imgSrc, idx) => `
-                <div class="preview-wrapper"><img src="${imgSrc}"><button type="button" class="remove-img-btn" onclick="uploadedImagesBase64.splice(${idx},1); renderThumbnailsLayout();">×</button></div>`
-            ).join('');
+        function removeImageAt(idx) {
+            selectedImageFiles.splice(idx, 1);
+            renderThumbnailsLayout();
         }
 
-        function handleFormSubmission(e) {
-            e.preventDefault();
-            if(uploadedImagesBase64.length === 0) { alert("Kam az kam ek image lazmi hai!"); return; }
-            const placementValue = document.getElementById('prod-placement').value.split('|');
+        // Upload single image to Firebase Storage and return download URL
+        function uploadImageToStorage(file, productId) {
+            return new Promise((resolve, reject) => {
+                const fileName = `${productId}_${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                const storageRef = storage.ref(`products/${productId}/${fileName}`);
+                const uploadTask = storageRef.put(file);
 
-            const item = {
-                id: Date.now(),
-                name: document.getElementById('prod-name').value.trim(),
-                root: placementValue[0],
-                sub: placementValue[1],
-                price: parseInt(document.getElementById('prod-price').value),
-                hasSize: document.getElementById('prod-size-needed').value,
-                desc: document.getElementById('prod-desc').value.trim(),
-                images: [...uploadedImagesBase64]
-            };
-
-            database.ref('products').push(item).then(() => {
-                document.getElementById('product-addition-form').reset();
-                uploadedImagesBase64 = []; renderThumbnailsLayout();
-                alert("🎉 Product Uploaded & Secured on Google Cloud!");
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Progress can be tracked here if needed
+                    },
+                    (error) => reject(error),
+                    () => {
+                        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                            resolve(downloadURL);
+                        }).catch(reject);
+                    }
+                );
             });
+        }
+
+        async function handleFormSubmission(e) {
+            e.preventDefault();
+            
+            if(selectedImageFiles.length === 0) { 
+                alert("Kam az kam ek image lazmi hai!"); 
+                return; 
+            }
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const progressFill = document.getElementById('upload-progress-fill');
+            const statusMsg = document.getElementById('upload-status-msg');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Uploading...";
+            progressBar.style.display = 'block';
+            statusMsg.innerText = "Starting upload...";
+            
+            try {
+                const placementValue = document.getElementById('prod-placement').value.split('|');
+                const productId = 'prod_' + Date.now();
+                
+                // Upload all images to Firebase Storage
+                statusMsg.innerText = `Uploading ${selectedImageFiles.length} image(s) to cloud storage...`;
+                const imageUrls = [];
+                
+                for(let i = 0; i < selectedImageFiles.length; i++) {
+                    statusMsg.innerText = `Uploading image ${i + 1} of ${selectedImageFiles.length}...`;
+                    progressFill.style.width = `${((i) / selectedImageFiles.length) * 100}%`;
+                    
+                    const url = await uploadImageToStorage(selectedImageFiles[i], productId);
+                    imageUrls.push(url);
+                }
+                
+                progressFill.style.width = '90%';
+                statusMsg.innerText = "Saving product details to database...";
+                
+                // Save product data to Realtime Database (only URLs, not base64!)
+                const item = {
+                    id: Date.now(),
+                    name: document.getElementById('prod-name').value.trim(),
+                    root: placementValue[0],
+                    sub: placementValue[1],
+                    price: parseInt(document.getElementById('prod-price').value),
+                    hasSize: document.getElementById('prod-size-needed').value,
+                    desc: document.getElementById('prod-desc').value.trim(),
+                    images: imageUrls
+                };
+
+                await database.ref('products/' + productId).set(item);
+                
+                progressFill.style.width = '100%';
+                statusMsg.innerText = "✅ Product published successfully!";
+                
+                alert("🎉 Product Uploaded & Secured on Google Cloud!");
+                
+                // Reset form
+                document.getElementById('product-addition-form').reset();
+                selectedImageFiles = [];
+                renderThumbnailsLayout();
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                    statusMsg.innerText = '';
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Publish Product';
+                }, 2000);
+                
+            } catch (error) {
+                console.error("Upload error:", error);
+                statusMsg.innerText = "❌ Error: " + error.message;
+                alert("Upload failed: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Publish Product';
+            }
         }
     </script>
 </body>
