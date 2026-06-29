@@ -98,7 +98,7 @@
         <div class="cart-panel" id="cart-section">
             <div class="cart-header">
                 <span>🛒 Selected Products</span>
-                <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">🗑️ Clear</span>
+                <span style="color:#e02424; font-size:11px; cursor:pointer;" onclick="wipeCart()">️ Clear</span>
             </div>
             <div id="basket-items-container">
                 <p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>
@@ -124,8 +124,8 @@
     </div>
 
     <script>
-        // ✅ SUPABASE CREDENTIALS - Already filled
-        const SUPABASE_URL = 'https://mriodmlejaguxlnjzkpv.supabase.co/rest/v1/';
+        // ✅ CORRECTED - No /rest/v1 in URL
+        const SUPABASE_URL = 'https://mriodmlejaguxlnjjzkpv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaW9kbWxlamFndXhsbmp6a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MTA1OTQsImV4cCI6MjA5ODI4NjU5NH0.zwfpCiNrE_WUDxCJk0orMXKvzlbgTwPy4A3-gETaQ-Q';
         
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -313,11 +313,11 @@
                 
                 if (error) throw error;
                 
-                alert(`🎉 Order Confirmed!\n\n Order ID: ${orderId}\n💰 Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
+                alert(`🎉 Order Confirmed!\n\n📦 Order ID: ${orderId}\n Total: Rs. ${grandTotal}\n\nHum jald aap se WhatsApp par rabta karenge!`);
                 wipeCart();
                 e.target.reset();
             } catch (err) {
-                alert(" Error: " + err.message);
+                alert("❌ Error: " + err.message);
                 btn.disabled = false;
                 btn.innerText = '✅ Confirm Order';
             }
