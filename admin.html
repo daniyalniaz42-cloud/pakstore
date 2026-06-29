@@ -8,7 +8,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f1f5f9; color: #1e293b; padding: 24px 12px; }
         .admin-box { max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; }
-        h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
         .subtitle { font-size: 13px; color: #64748b; margin-bottom: 20px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px; }
         
         .form-group { margin-bottom: 16px; }
@@ -16,23 +16,16 @@
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc; }
         input:focus, select:focus, textarea:focus { border-color: #1a56db; background: white; }
         
-        /* Multiple Image Upload Style Wrapper */
-        .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; position: relative; transition: border 0.2s; }
-        .upload-zone:hover { border-color: #1a56db; }
-        .upload-zone p { font-size: 13px; color: #64748b; font-weight: 500; }
-        .upload-zone span { font-size: 11px; color: #94a3b8; display: block; margin-top: 4px; }
+        .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; position: relative; }
         #image-file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         
-        /* Thumbnail Previews Grid for Multiple Images */
         .preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
-        .preview-wrapper { position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
+        .preview-wrapper { position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; }
         .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .remove-img-btn { position: absolute; top: 2px; right: 2px; background: rgba(224, 36, 36, 0.9); color: white; border: none; width: 16px; height: 16px; font-size: 10px; font-weight: bold; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
-        .btn-submit:hover { background: #1e40af; }
+        .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; }
 
-        /* Inventory List Desk */
         .inventory-title { font-size: 15px; font-weight: 700; margin-top: 24px; margin-bottom: 12px; color: #334155; }
         .inventory-list { display: flex; flex-direction: column; gap: 10px; }
         .inventory-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
@@ -41,33 +34,32 @@
         .item-details h4 { font-size: 13px; font-weight: 700; color: #1e293b; }
         .item-details p { font-size: 11px; color: #64748b; }
         .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-        .btn-delete:hover { background: #fca5a5; }
     </style>
 </head>
 <body>
 
     <div class="admin-box">
         <h1>⚙️ Store Inventory Console</h1>
-        <p class="subtitle">Naye products add karein aur stock control karein</p>
+        <p class="subtitle">Sahi category aur subcategory select karke product list karein</p>
 
-        <!-- Product Insertion Form Setup -->
         <form id="product-addition-form" onsubmit="handleFormSubmission(event)">
             
             <div class="form-group">
                 <label>Product Name / Title</label>
-                <input type="text" id="prod-name" placeholder="e.g., Women Gold Plated Jewellery Set" required>
+                <input type="text" id="prod-name" placeholder="e.g., Rolex Oyster Perpetual Black" required>
             </div>
 
             <div class="form-group">
-                <label>Category Placement</label>
-                <select id="prod-category" required>
-                    <option value="men-clothes">Men's Fashion - Clothes & Unstitched</option>
-                    <option value="men-watches">Men's Fashion - Watches</option>
-                    <option value="men-perfumes">Men's Fashion - Perfumes</option>
-                    <option value="women-clothes">Women's Fashion - Clothes & Kurtis</option>
-                    <option value="women-jewellery">Women's Fashion - Jewellery</option>
-                    <option value="women-watches">Women's Fashion - Luxury Watches</option>
-                    <option value="women-cosmetics">Women's Fashion - Cosmetics</option>
+                <label>Product Placement Target (Category & Subcategory)</label>
+                <select id="prod-placement" required>
+                    <option value="fashion|men-clothes">👕 Men's Fashion - Clothes & Tracksuits</option>
+                    <option value="fashion|men-watches">⌚ Men's Fashion - Watches</option>
+                    
+                    <option value="fashion|women-clothes">👗 Women's Fashion - Clothes & Kurtis</option>
+                    <option value="fashion|women-jewellery">💍 Women's Fashion - Jewellery</option>
+                    
+                    <option value="electronics|elec-audio">🎧 Electronics - Audio & Pods</option>
+                    <option value="electronics|elec-wearables">⌚ Electronics - Smart Wearables</option>
                 </select>
             </div>
 
@@ -77,44 +69,36 @@
                     <input type="number" id="prod-price" placeholder="e.g., 2500" required>
                 </div>
                 <div>
-                    <label>Size Selection Dropdown?</label>
+                    <label>Size Variant Box?</label>
                     <select id="prod-size-needed">
                         <option value="no">No Sizes Needed</option>
-                        <option value="yes">Enable Size Options (S, M, L, XL)</option>
+                        <option value="yes">Enable Sizes (S, M, L, XL)</option>
                     </select>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Product Description</label>
-                <textarea id="prod-desc" placeholder="Product ke baare mein tafseel likhein..." rows="3" required></textarea>
+                <textarea id="prod-desc" placeholder="Product details likhein..." rows="3" required></textarea>
             </div>
 
-            <!-- MULTIPLE IMAGE UPLOAD FIELD COMPONENT (Upto 10 Files Allowed) -->
             <div class="form-group">
-                <label>Upload Images (Maximum 10 Images Supported)</label>
+                <label>Upload Images (Maximum 10 Images)</label>
                 <div class="upload-zone">
                     <p>📸 Click ya Drop karke Images Select Karein</p>
-                    <span>Upto 10 images multi-carousel slide support ke liye</span>
                     <input type="file" id="image-file-input" accept="image/*" multiple onchange="processMultipleImages(event)">
                 </div>
-                
-                <!-- Thumbnails render wrapper zone -->
                 <div class="preview-grid" id="image-previews-container"></div>
             </div>
 
             <button type="submit" class="btn-submit">Publish Product To Catalog</button>
         </form>
 
-        <!-- Current Store Inventory Display Table -->
         <div class="inventory-title">📦 Existing Active Products</div>
-        <div class="inventory-list" id="admin-inventory-target">
-            <!-- Items injected via active state arrays -->
-        </div>
+        <div class="inventory-list" id="admin-inventory-target"></div>
     </div>
 
     <script>
-        // Array container to store base64 string records safely up to length 10
         let uploadedImagesBase64 = [];
 
         function renderActiveInventory() {
@@ -122,7 +106,7 @@
             const container = document.getElementById('admin-inventory-target');
             
             if(products.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:12px 0;">No active items found in global local store.</p>`;
+                container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:12px 0;">No active items found.</p>`;
                 return;
             }
 
@@ -131,10 +115,10 @@
                 return `
                     <div class="inventory-item">
                         <div class="item-info">
-                            <img src="${firstImg}" class="item-thumb" alt="Product Image">
+                            <img src="${firstImg}" class="item-thumb">
                             <div class="item-details">
                                 <h4>${p.name}</h4>
-                                <p>Rs. ${p.price} | ${p.category.toUpperCase()} (${p.images ? p.images.length : 0} Pics)</p>
+                                <p>Rs. ${p.price} | Target: ${p.root} -> ${p.sub}</p>
                             </div>
                         </div>
                         <button class="btn-delete" onclick="removeProductNode(${p.id})">Remove</button>
@@ -146,12 +130,6 @@
         function processMultipleImages(event) {
             const files = event.target.files;
             const remainingSlots = 10 - uploadedImagesBase64.length;
-            
-            if (files.length > remainingSlots) {
-                alert(`Limit Extended! Aap maximum 10 images hi upload kar sakte hain. Abhi aap sirf ${remainingSlots} mazeed images select kar sakte hain.`);
-            }
-
-            // Slice out only till remaining index boundary
             const validFilesArray = Array.from(files).slice(0, remainingSlots);
 
             validFilesArray.forEach(file => {
@@ -162,17 +140,15 @@
                 };
                 reader.readAsDataURL(file);
             });
-            
-            // Input reset so same file can be clicked again safely
             event.target.value = "";
         }
 
         function renderThumbnailsLayout() {
             const container = document.getElementById('image-previews-container');
-            container.innerHTML = uploadedImagesBase64.map((imgSrc, targetIdx) => `
+            container.innerHTML = uploadedImagesBase64.map((imgSrc, idx) => `
                 <div class="preview-wrapper">
                     <img src="${imgSrc}">
-                    <button type="button" class="remove-img-btn" onclick="deleteSelectedImageTrack(${targetIdx})">×</button>
+                    <button type="button" class="remove-img-btn" onclick="deleteSelectedImageTrack(${idx})">×</button>
                 </div>
             `).join('');
         }
@@ -184,37 +160,34 @@
 
         function handleFormSubmission(e) {
             e.preventDefault();
-
-            if(uploadedImagesBase64.length === 0) {
-                alert("Meherbani karke product ki kam az kam ek image zaroor upload karein!");
-                return;
-            }
+            if(uploadedImagesBase64.length === 0) { alert("Kam az kam ek image upload karein!"); return; }
 
             const currentInventory = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            const placementValue = document.getElementById('prod-placement').value.split('|');
+
             const structuredProductObject = {
-                id: Date.now(), // Generate unique safe dynamic timeline token
+                id: Date.now(),
                 name: document.getElementById('prod-name').value.trim(),
-                category: document.getElementById('prod-category').value,
+                root: placementValue[0], // core tab (fashion/electronics)
+                sub: placementValue[1],  // lower subcategory filter node
                 price: parseInt(document.getElementById('prod-price').value),
                 hasSize: document.getElementById('prod-size-needed').value,
                 desc: document.getElementById('prod-desc').value.trim(),
-                images: [...uploadedImagesBase64] // Destructure complete multi array map directly safely
+                images: [...uploadedImagesBase64]
             };
 
             currentInventory.push(structuredProductObject);
             localStorage.setItem('pakstore_products', JSON.stringify(currentInventory));
             
-            // Clean dynamic parameters state
             document.getElementById('product-addition-form').reset();
             uploadedImagesBase64 = [];
             renderThumbnailsLayout();
             renderActiveInventory();
-            
-            alert("🎉 Product successfully update aur main portal par push kar diya gaya hai!");
+            alert("🎉 Product successfully update aur main database me inject ho gaya!");
         }
 
         function removeProductNode(productId) {
-            if(confirm("Kya aap waqai is product ko store se delete karna chahte hain?")) {
+            if(confirm("Delete this product?")) {
                 let currentInventory = JSON.parse(localStorage.getItem('pakstore_products')) || [];
                 currentInventory = currentInventory.filter(p => p.id !== productId);
                 localStorage.setItem('pakstore_products', JSON.stringify(currentInventory));
@@ -222,7 +195,6 @@
             }
         }
 
-        // Initialize view on baseline setup execution runtime
         window.onload = renderActiveInventory;
     </script>
 </body>
