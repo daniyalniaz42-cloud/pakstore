@@ -4,38 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PakStore - Hub</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
-        
         header { background: white; padding: 4px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; height: 70px; position: sticky; top: 0; z-index: 100; }
         header .brand-logo img { height: 50px; width: auto; }
         .header-icons { display: flex; gap: 16px; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 22px; }
         .cart-badge { position: absolute; top: -6px; right: -8px; background: #e02424; color: white; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
-
         .app-container { max-width: 600px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.02); }
         .trust-banner-container { padding: 12px 16px 4px 16px; }
         .pak-banner { background: linear-gradient(135deg, #2f855a, #48bb78); color: white; padding: 10px; border-radius: 8px; text-align: center; font-weight: 700; font-size: 13px; }
-
         .search-section { padding: 12px 16px; }
         .search-wrapper { position: relative; display: flex; align-items: center; }
         .search-wrapper input { width: 100%; padding: 11px 40px; border: 1px solid #cbd5e0; border-radius: 8px; background: #f7f9fa; font-size: 13px; outline: none; }
         .search-icon-left { position: absolute; left: 14px; color: #a0aec0; font-size: 14px; }
-
         .main-vertical-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 4px 16px; }
         .tab-node { padding: 12px; text-align: center; background: #f1f5f9; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; }
         .tab-node.active { background: #1a56db; color: white; }
-
         .subcat-wrapper-panel { background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; margin-top: 12px; padding: 12px 16px; display: none; }
         .subcat-group-title { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
         .subcat-flex-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
         .subcat-pill { padding: 6px 14px; background: white; border: 1px solid #cbd5e1; border-radius: 20px; font-size: 12px; font-weight: 600; color: #334155; white-space: nowrap; cursor: pointer; }
         .subcat-pill.active { background: #eff6ff; border-color: #1a56db; color: #1a56db; }
-
         .section-title { padding: 16px 16px 4px 16px; font-size: 15px; font-weight: 700; color: #1a202c; }
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 16px; }
-        
         .product-card { background: white; border: 1px solid #edf2f7; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
         .product-image-carousel { width: 100%; height: 140px; position: relative; overflow: hidden; border-radius: 8px; background: #f7f9fa; }
         .carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease; }
@@ -47,24 +42,19 @@
         .carousel-dots { position: absolute; bottom: 6px; width: 100%; display: flex; justify-content: center; gap: 4px; }
         .dot { width: 5px; height: 5px; background: rgba(0,0,0,0.2); border-radius: 50%; }
         .dot.active { background: #1a56db; width: 10px; border-radius: 3px; }
-
         .product-title { font-size: 13px; font-weight: 600; color: #2d3748; margin-top: 8px; }
         .product-desc { font-size: 11px; color: #718096; margin: 4px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        
         .size-box { margin-bottom: 8px; background: #f8fafc; padding: 4px 6px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .size-box label { font-size: 9px; font-weight: 700; color: #64748b; display: block; }
         .size-select { width: 100%; border: none; background: transparent; font-size: 12px; font-weight: 600; outline: none; }
-
         .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
         .card-price { font-size: 14px; font-weight: 800; color: #1a56db; }
         .add-cart-action { background: #1a56db; color: white; border: none; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
         .cart-panel { padding: 16px; margin: 12px 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0; }
         .cart-header { display: flex; justify-content: space-between; font-size: 14px; font-weight: 700; margin-bottom: 10px; }
         .cart-item-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #edf2f7; }
         .checkout-form input, .checkout-form textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; outline: none; }
         .btn-order-trigger { background: #0e9f6e; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; margin-top: 12px; cursor: pointer; }
-
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; background: white; height: 55px; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #edf2f7; z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; background: none; border: none; color: #718096; font-size: 11px; font-weight: 600; cursor: pointer; }
         .nav-item.active { color: #1a56db; }
@@ -73,7 +63,6 @@
 <body>
 
     <div class="app-container" id="app-container">
-        
         <header>
             <a href="#" class="brand-logo"><img src="Logo.png" alt="Logo"></a>
             <div class="header-icons">
@@ -100,10 +89,7 @@
 
         <div class="subcat-wrapper-panel" id="subcat-container-panel"></div>
 
-        <div class="section-title">
-            <span id="catalog-header-text">All Available Stock</span>
-        </div>
-        
+        <div class="section-title"><span id="catalog-header-text">All Available Stock</span></div>
         <div class="product-grid" id="products-render-target"></div>
 
         <div class="cart-panel" id="cart-section">
@@ -132,45 +118,44 @@
             <button class="nav-item" onclick="scrollToId('products-render-target')">🗂️ <span>Products</span></button>
             <button class="nav-item" onclick="scrollToId('cart-section')">🛒 <span>Basket</span></button>
         </div>
-
     </div>
 
     <script>
+        // FIREBASE CONNECTIVITY CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyAf6-Z11aoBDCHeKt1M-8v_4ql6yBzPqwY",
+            authDomain: "pakstore-db-29eff.firebaseapp.com",
+            databaseURL: "https://pakstore-db-29eff-default-rtdb.firebaseio.com",
+            projectId: "pakstore-db-29eff",
+            storageBucket: "pakstore-db-29eff.firebasestorage.app",
+            messagingSenderId: "553423977932",
+            appId: "1:553423977932:web:e9a41935cf6e5fde887169"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         let shoppingCart = [];
         let rootVertical = 'all';
         let subCategoryFilter = 'all';
         let textSearchPattern = '';
         let sliderPositions = {};
-
-        const defaultStockRegistry = [
-            { id: 101, name: "Men Unstitched Soft Cotton Wear", price: 1800, desc: "Premium wash n wear fabric bundle.", root: "fashion", sub: "men-clothes", hasSize: "no", images: ["https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400"] },
-            { id: 102, name: "Men Luxury Chrono Quartz Watch", price: 2990, desc: "Waterproof sleek analog configuration watch.", root: "fashion", sub: "men-watches", hasSize: "no", images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400"] },
-            { id: 103, name: "Women Gold Zircon Complete Choker Set", price: 3500, desc: "High shine wedding design premium set.", root: "fashion", sub: "women-jewellery", hasSize: "no", images: ["https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400"] },
-            { id: 104, name: "Women Classic Linen Digital Kurti", price: 1450, desc: "Pure linen stitched regular fit design.", root: "fashion", sub: "women-clothes", hasSize: "yes", images: ["https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400"] },
-            { id: 105, name: "Ultra Pods Pro Wireless Buds", price: 1650, desc: "High bass nodes with dual LED charging meters.", root: "electronics", sub: "elec-audio", hasSize: "no", images: ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400"] },
-            { id: 106, name: "Series 8 Smart Watch Waterproof", price: 4200, desc: "Full touch screen fitness tracking node.", root: "electronics", sub: "elec-wearables", hasSize: "no", images: ["https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400"] }
-        ];
+        let masterList = [];
 
         window.onload = function() {
-            if(!localStorage.getItem('pakstore_products')) {
-                localStorage.setItem('pakstore_products', JSON.stringify(defaultStockRegistry));
-            }
-            renderGlobalCatalog();
+            database.ref('products').on('value', (snapshot) => {
+                const data = snapshot.val();
+                masterList = data ? Object.keys(data).map(key => ({firebaseKey: key, ...data[key]})) : [];
+                renderGlobalCatalog();
+            });
         };
 
         function selectRootVertical(type) {
-            rootVertical = type;
-            subCategoryFilter = 'all';
-            
+            rootVertical = type; subCategoryFilter = 'all';
             document.querySelectorAll('.tab-node').forEach(n => n.classList.remove('active'));
             document.getElementById(`tab-${type}`).classList.add('active');
-
             const subPanel = document.getElementById('subcat-container-panel');
             
-            if (type === 'all') {
-                subPanel.style.display = 'none';
-                document.getElementById('catalog-header-text').innerText = "All Available Stock";
-            } 
+            if (type === 'all') { subPanel.style.display = 'none'; document.getElementById('catalog-header-text').innerText = "All Available Stock"; } 
             else if (type === 'fashion') {
                 subPanel.style.display = 'block';
                 subPanel.innerHTML = `
@@ -181,11 +166,9 @@
                         <span class="subcat-pill" onclick="applySubFilter(this, 'men-watches')">Men's Watches</span>
                         <span class="subcat-pill" onclick="applySubFilter(this, 'women-clothes')">Women's Clothes</span>
                         <span class="subcat-pill" onclick="applySubFilter(this, 'women-jewellery')">Women's Jewellery</span>
-                    </div>
-                `;
+                    </div>`;
                 document.getElementById('catalog-header-text').innerText = "Fashion Inventory";
-            } 
-            else if (type === 'electronics') {
+            } else if (type === 'electronics') {
                 subPanel.style.display = 'block';
                 subPanel.innerHTML = `
                     <div class="subcat-group-title">Electronics Categories</div>
@@ -193,8 +176,7 @@
                         <span class="subcat-pill active" onclick="applySubFilter(this, 'all')">All Electronics</span>
                         <span class="subcat-pill" onclick="applySubFilter(this, 'elec-audio')">Audio & Earbuds</span>
                         <span class="subcat-pill" onclick="applySubFilter(this, 'elec-wearables')">Smart Watches</span>
-                    </div>
-                `;
+                    </div>`;
                 document.getElementById('catalog-header-text').innerText = "Electronics Inventory";
             }
             renderGlobalCatalog();
@@ -208,10 +190,8 @@
         }
 
         function renderGlobalCatalog() {
-            const masterList = JSON.parse(localStorage.getItem('pakstore_products')) || [];
             const grid = document.getElementById('products-render-target');
-            
-            let workingSet = masterList;
+            let workingSet = [...masterList];
             if(rootVertical !== 'all') workingSet = workingSet.filter(p => p.root === rootVertical);
             if(subCategoryFilter !== 'all') workingSet = workingSet.filter(p => p.sub === subCategoryFilter);
             if(textSearchPattern) workingSet = workingSet.filter(p => p.name.toLowerCase().includes(textSearchPattern.toLowerCase()));
@@ -224,39 +204,17 @@
             grid.innerHTML = workingSet.map(p => {
                 if (sliderPositions[p.id] === undefined) sliderPositions[p.id] = 0;
                 const images = (p.images && p.images.length > 0) ? p.images.slice(0, 10) : [null];
-
                 let slidesHTML = images.map(src => `<div class="carousel-slide">${src ? `<img src="${src}">` : '📦'}</div>`).join('');
                 let dotsHTML = images.length > 1 ? `<div class="carousel-dots" id="dots-${p.id}">${images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}</div>` : '';
-                let navHTML = images.length > 1 ? `
-                    <button class="carousel-btn prev" onclick="cycleImg(${p.id}, -1, ${images.length})">❮</button>
-                    <button class="carousel-btn next" onclick="cycleImg(${p.id}, 1, ${images.length})">❯</button>
-                ` : '';
-
-                let sizeHTML = p.hasSize === 'yes' ? `
-                    <div class="size-box">
-                        <label>Select Size</label>
-                        <select class="size-select" id="size-box-${p.id}">
-                            <option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option>
-                        </select>
-                    </div>
-                ` : '';
+                let navHTML = images.length > 1 ? `<button class="carousel-btn prev" onclick="cycleImg(${p.id}, -1, ${images.length})">❮</button><button class="carousel-btn next" onclick="cycleImg(${p.id}, 1, ${images.length})">❯</button>` : '';
+                let sizeHTML = p.hasSize === 'yes' ? `<div class="size-box"><label>Select Size</label><select class="size-select" id="size-box-${p.id}"><option value="S">S</option><option value="M" selected>M</option><option value="L">L</option><option value="XL">XL</option></select></div>` : '';
 
                 return `
                     <div class="product-card">
-                        <div class="product-image-carousel">
-                            ${navHTML}
-                            <div class="carousel-track" id="track-${p.id}">${slidesHTML}</div>
-                            ${dotsHTML}
-                        </div>
-                        <h3 class="product-title">${p.name}</h3>
-                        <p class="product-desc">${p.desc}</p>
-                        ${sizeHTML}
-                        <div class="card-meta">
-                            <span class="card-price">Rs. ${p.price}</span>
-                            <button class="add-cart-action" onclick="pushToBasket(${p.id}, '${p.name}', ${p.price}, '${p.hasSize}')">+</button>
-                        </div>
-                    </div>
-                `;
+                        <div class="product-image-carousel">${navHTML}<div class="carousel-track" id="track-${p.id}">${slidesHTML}</div>${dotsHTML}</div>
+                        <h3 class="product-title">${p.name}</h3><p class="product-desc">${p.desc}</p>${sizeHTML}
+                        <div class="card-meta"><span class="card-price">Rs. ${p.price}</span><button class="add-cart-action" onclick="pushToBasket(${p.id}, '${p.name}', ${p.price}, '${p.hasSize}')">+</button></div>
+                    </div>`;
             }).join('');
         }
 
@@ -264,58 +222,35 @@
             sliderPositions[pid] += dir;
             if(sliderPositions[pid] < 0) sliderPositions[pid] = total - 1;
             if(sliderPositions[pid] >= total) sliderPositions[pid] = 0;
-
             document.getElementById(`track-${pid}`).style.transform = `translateX(-${sliderPositions[pid] * 100}%)`;
             const dots = document.querySelectorAll(`#dots-${pid} .dot`);
             dots.forEach((d, idx) => d.classList.toggle('active', idx === sliderPositions[pid]));
         }
 
-        function triggerSearch() {
-            textSearchPattern = document.getElementById('store-search-field').value.trim();
-            renderGlobalCatalog();
-        }
-
+        function triggerSearch() { textSearchPattern = document.getElementById('store-search-field').value.trim(); renderGlobalCatalog(); }
         function pushToBasket(id, name, price, sizeVar) {
-            let label = name;
-            if(sizeVar === 'yes') { label += ` (${document.getElementById(`size-box-${id}`).value})`; }
-            const match = shoppingCart.find(i => i.label === label);
-            if(match) match.qty++;
-            else shoppingCart.push({ label, price, qty: 1 });
+            let label = name; if(sizeVar === 'yes') { label += ` (${document.getElementById(`size-box-${id}`).value})`; }
+            const match = shoppingCart.find(i => i.label === label); if(match) match.qty++; else shoppingCart.push({ label, price, qty: 1 });
             updateBasketUi();
         }
 
         function updateBasketUi() {
             document.getElementById('cart-counter-badge').innerText = shoppingCart.reduce((sum, item) => sum + item.qty, 0);
             const container = document.getElementById('basket-items-container');
-            
-            if(shoppingCart.length === 0) {
-                container.innerHTML = '<p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>';
-                document.getElementById('basket-total-sum').innerText = "Rs. 0";
-                return;
-            }
-
-            container.innerHTML = shoppingCart.map(i => `
-                <div class="cart-item-row">
-                    <div><strong>${i.label}</strong><br><span style="color:#64748b;">Rs. ${i.price} x ${i.qty}</span></div>
-                    <span style="font-weight:700;">Rs. ${i.price * i.qty}</span>
-                </div>
-            `).join('');
-
+            if(shoppingCart.length === 0) { container.innerHTML = '<p style="color:#a0aec0; font-size:12px; text-align:center; padding:12px 0;">Basket is empty.</p>'; document.getElementById('basket-total-sum').innerText = "Rs. 0"; return; }
+            container.innerHTML = shoppingCart.map(i => `<div class="cart-item-row"><div><strong>${i.label}</strong><br><span style="color:#64748b;">Rs. ${i.price} x ${i.qty}</span></div><span style="font-weight:700;">Rs. ${i.price * i.qty}</span></div>`).join('');
             let grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             document.getElementById('basket-total-sum').innerText = `Rs. ${grandTotal}`;
         }
 
         function wipeCart() { shoppingCart = []; updateBasketUi(); }
 
-        // CORE FIX: Database submission logic inject ki gayi hai
         function placeOrder(e) {
             e.preventDefault();
             if(shoppingCart.length === 0) { alert('Basket empty hai!'); return; }
-            
             const orderId = 'PK-' + Math.floor(1000 + Math.random() * 9000);
             const grandTotal = shoppingCart.reduce((sum, item) => sum + (item.price * item.qty), 0);
             
-            // Order details bundle banaya
             const orderPayload = {
                 id: orderId,
                 customerName: document.getElementById('cust-name').value.trim(),
@@ -327,14 +262,12 @@
                 date: new Date().toLocaleString()
             };
 
-            // LocalStorage database me save kiya taake admin panel read kar sakay
-            let existingOrders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            existingOrders.push(orderPayload);
-            localStorage.setItem('pakstore_orders', JSON.stringify(existingOrders));
-
-            alert(`🎉 Order Confirmed!\nOrder ID: ${orderId}\nAdmin Panel me sync ho chuka hai.`);
-            wipeCart();
-            e.target.reset();
+            database.ref('orders').push(orderPayload)
+            .then(() => {
+                alert(`🎉 Order Confirmed Securely!\nOrder ID: ${orderId}`);
+                wipeCart();
+                e.target.reset();
+            }).catch(err => alert("Error saving order: " + err.message));
         }
 
         function scrollToId(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
