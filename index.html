@@ -124,11 +124,11 @@
     </div>
 
     <script>
-        // ⚠️ YAHAN APNI SUPABASE DETAILS DALEIN (same as admin)
-        const SUPABASE_URL = 'sb_publishable_fxAi8Stbvmb4TAb5vyXNfQ_DWeMAC62';
+        // ✅ SUPABASE CREDENTIALS - Already filled
+        const SUPABASE_URL = 'https://mriodmlejaguxlnjjzkpv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yaW9kbWxlamFndXhsbmp6a3B2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MTA1OTQsImV4cCI6MjA5ODI4NjU5NH0.zwfpCiNrE_WUDxCJk0orMXKvzlbgTwPy4A3-gETaQ-Q';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let shoppingCart = [];
         let rootVertical = 'all';
@@ -143,7 +143,7 @@
 
         async function loadProducts() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('products')
                     .select('*')
                     .order('id', { ascending: false });
@@ -309,7 +309,7 @@
             };
 
             try {
-                const { error } = await supabase.from('orders').insert(orderPayload);
+                const { error } = await supabaseClient.from('orders').insert(orderPayload);
                 
                 if (error) throw error;
                 
