@@ -8,12 +8,33 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { background: #f7f9fa; color: #2d3748; padding-bottom: 70px; }
         
-        /* App Header */
-        header { background: white; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #edf2f7; position: sticky; top: 0; z-index: 100; height: 56px; }
-        
-        /* Premium Uploaded Logo Implementation */
-        header .brand-logo { display: flex; align-items: center; text-decoration: none; height: 100%; }
-        .logo-img { height: 42px; width: auto; object-fit: contain; }
+        /* App Header Container Height Balanced */
+header { 
+    background: white; 
+    padding: 8px 16px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid #edf2f7; 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+    height: 70px; /* Header ki height thori barhai hai bade logo ke liye */
+}
+
+/* Premium Logo Increased Size */
+header .brand-logo { 
+    display: flex; 
+    align-items: center; 
+    text-decoration: none; 
+    height: 100%; 
+}
+
+.logo-img { 
+    height: 54px; /* Pehle bohot chota tha, ab size badha kar 54px kar diya hai */
+    width: auto; 
+    object-fit: contain; 
+}
         
         .header-icons { display: flex; gap: 16px; align-items: center; }
         .icon-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 18px; }
