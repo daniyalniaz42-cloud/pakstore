@@ -3,200 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PakStore - Secure Admin Control</title>
+    <title>Store Management Desk - Admin Panel</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f1f5f9; padding-bottom: 40px; }
-        header { background: #0f172a; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
-        .panel { background: white; padding: 20px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        h2 { font-size: 16px; margin-bottom: 15px; color: #1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #f1f5f9; color: #1e293b; padding: 24px 12px; }
+        .admin-box { max-width: 650px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 20px; }
+        h1 { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .subtitle { font-size: 13px; color: #64748b; margin-bottom: 20px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 12px; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 12px; align-items: flex-end; }
-        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc; }
+        input:focus, select:focus, textarea:focus { border-color: #1a56db; background: white; }
         
-        input, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; background: white; }
-        button { border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-blue { background: #2563eb; color: white; padding: 10px 20px; font-size: 14px; }
-        .btn-red { background: #fee2e2; color: #dc2626; padding: 5px 10px; font-size: 12px; }
-        .btn-delete-prod { background: #ef4444; color: white; padding: 5px 8px; font-size: 11px; border-radius: 4px; margin-top: 8px; }
+        /* Multiple Image Upload Style Wrapper */
+        .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; position: relative; transition: border 0.2s; }
+        .upload-zone:hover { border-color: #1a56db; }
+        .upload-zone p { font-size: 13px; color: #64748b; font-weight: 500; }
+        .upload-zone span { font-size: 11px; color: #94a3b8; display: block; margin-top: 4px; }
+        #image-file-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        
+        /* Thumbnail Previews Grid for Multiple Images */
+        .preview-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 12px; }
+        .preview-wrapper { position: relative; width: 100%; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 1px solid #e2e8f0; background: #f1f5f9; }
+        .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-img-btn { position: absolute; top: 2px; right: 2px; background: rgba(224, 36, 36, 0.9); color: white; border: none; width: 16px; height: 16px; font-size: 10px; font-weight: bold; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; text-align: left; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
-        th { background: #f8fafc; color: #64748b; }
-        
-        .admin-prod-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
-        .admin-prod-item { border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; background: #f8fafc; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
-        .cat-tag { position: absolute; top: 8px; right: 8px; font-size: 10px; background: #0284c7; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: white; text-transform: uppercase;}
+        .btn-submit { background: #1a56db; color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+        .btn-submit:hover { background: #1e40af; }
+
+        /* Inventory List Desk */
+        .inventory-title { font-size: 15px; font-weight: 700; margin-top: 24px; margin-bottom: 12px; color: #334155; }
+        .inventory-list { display: flex; flex-direction: column; gap: 10px; }
+        .inventory-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .item-info { display: flex; align-items: center; gap: 10px; }
+        .item-thumb { width: 45px; height: 45px; border-radius: 6px; object-fit: cover; background: #e2e8f0; }
+        .item-details h4 { font-size: 13px; font-weight: 700; color: #1e293b; }
+        .item-details p { font-size: 11px; color: #64748b; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-delete:hover { background: #fca5a5; }
     </style>
 </head>
-<body onload="loadAdminDashboard()">
+<body>
 
-    <header>
-        <h1 style="font-size: 18px;">PakStore Admin Control Desk</h1>
-        <span style="font-size:12px; color:#4ade80;">● Offline Native Sync Active</span>
-    </header>
+    <div class="admin-box">
+        <h1>⚙️ Store Inventory Console</h1>
+        <p class="subtitle">Naye products add karein aur stock control karein</p>
 
-    <main class="container">
-        
-        <section class="panel">
-            <h2>Add New Product to Storefront</h2>
-            <form onsubmit="addNewProduct(event)" class="form-grid">
+        <!-- Product Insertion Form Setup -->
+        <form id="product-addition-form" onsubmit="handleFormSubmission(event)">
+            
+            <div class="form-group">
+                <label>Product Name / Title</label>
+                <input type="text" id="prod-name" placeholder="e.g., Women Gold Plated Jewellery Set" required>
+            </div>
+
+            <div class="form-group">
+                <label>Category Placement</label>
+                <select id="prod-category" required>
+                    <option value="men-clothes">Men's Fashion - Clothes & Unstitched</option>
+                    <option value="men-watches">Men's Fashion - Watches</option>
+                    <option value="men-perfumes">Men's Fashion - Perfumes</option>
+                    <option value="women-clothes">Women's Fashion - Clothes & Kurtis</option>
+                    <option value="women-jewellery">Women's Fashion - Jewellery</option>
+                    <option value="women-watches">Women's Fashion - Luxury Watches</option>
+                    <option value="women-cosmetics">Women's Fashion - Cosmetics</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 <div>
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Product Name</span>
-                    <input type="text" id="p-name" required>
+                    <label>Retail Price (Rs.)</label>
+                    <input type="number" id="prod-price" placeholder="e.g., 2500" required>
                 </div>
                 <div>
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Price (Rs.)</span>
-                    <input type="number" id="p-price" required>
-                </div>
-                <div>
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Category</span>
-                    <select id="p-category">
-                        <option value="electronics">Electronics</option>
-                        <option value="fashion">Fashion</option>
-                        <option value="furniture">Furniture</option>
-                        <option value="cosmetics">Cosmetics</option>
-                        <option value="groceries">Groceries</option>
+                    <label>Size Selection Dropdown?</label>
+                    <select id="prod-size-needed">
+                        <option value="no">No Sizes Needed</option>
+                        <option value="yes">Enable Size Options (S, M, L, XL)</option>
                     </select>
                 </div>
-                <div>
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Size Option?</span>
-                    <select id="p-size-feature">
-                        <option value="no">No Size Needed</option>
-                        <option value="yes">Enable Sizes (S, M, L, XL)</option>
-                    </select>
-                </div>
-                <div style="grid-column: 1 / -1;">
-                    <span style="font-size:11px; font-weight:bold; color:#64748b;">Specification / Details</span>
-                    <input type="text" id="p-desc" required>
-                </div>
-                <button type="submit" class="btn-blue">Publish</button>
-            </form>
-
-            <h3 style="font-size: 13px; margin-top: 25px; color: #475569; font-weight: bold;">Current Live Products:</h3>
-            <div id="admin-products-grid" class="admin-prod-list"></div>
-        </section>
-
-        <section class="panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h2>Customer Orders Ledger</h2>
-                <button onclick="clearAllOrders()" class="btn-red">Delete All Data</button>
             </div>
-            <div style="overflow-x: auto;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer Profile</th>
-                            <th>Items & Total Bill</th>
-                            <th>Status Control</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-orders-table"></tbody>
-                </table>
+
+            <div class="form-group">
+                <label>Product Description</label>
+                <textarea id="prod-desc" placeholder="Product ke baare mein tafseel likhein..." rows="3" required></textarea>
             </div>
-        </section>
-    </main>
+
+            <!-- MULTIPLE IMAGE UPLOAD FIELD COMPONENT (Upto 10 Files Allowed) -->
+            <div class="form-group">
+                <label>Upload Images (Maximum 10 Images Supported)</label>
+                <div class="upload-zone">
+                    <p>📸 Click ya Drop karke Images Select Karein</p>
+                    <span>Upto 10 images multi-carousel slide support ke liye</span>
+                    <input type="file" id="image-file-input" accept="image/*" multiple onchange="processMultipleImages(event)">
+                </div>
+                
+                <!-- Thumbnails render wrapper zone -->
+                <div class="preview-grid" id="image-previews-container"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">Publish Product To Catalog</button>
+        </form>
+
+        <!-- Current Store Inventory Display Table -->
+        <div class="inventory-title">📦 Existing Active Products</div>
+        <div class="inventory-list" id="admin-inventory-target">
+            <!-- Items injected via active state arrays -->
+        </div>
+    </div>
 
     <script>
-        function loadAdminDashboard() {
-            renderAdminProducts();
-            renderOrdersTable();
-        }
+        // Array container to store base64 string records safely up to length 10
+        let uploadedImagesBase64 = [];
 
-        function renderAdminProducts() {
+        function renderActiveInventory() {
             const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
-            const grid = document.getElementById('admin-products-grid');
+            const container = document.getElementById('admin-inventory-target');
             
-            if (products.length === 0) {
-                grid.innerHTML = `<p style="color:#aaa; font-size:13px;">No products active.</p>`;
+            if(products.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:12px; padding:12px 0;">No active items found in global local store.</p>`;
                 return;
             }
 
-            grid.innerHTML = products.map(p => `
-                <div class="admin-prod-item">
-                    <span class="cat-tag">${p.category}</span>
-                    <div>
-                        <strong style="font-size:14px; color:#0f172a;">${p.name}</strong>
-                        <p style="font-size:11px; color:#64748b; margin: 3px 0;">${p.desc}</p>
-                        <div style="font-size:11px; color:#e11d48; font-weight:bold; margin-bottom:4px;">
-                            ${p.hasSize === 'yes' ? '📏 Size Selection Active' : '📦 Standard Unit'}
-                        </div>
-                        <span style="font-weight:bold; color:#2563eb; font-size:13px;">Rs. ${p.price}</span>
-                    </div>
-                    <div>
-                        <button onclick="deleteProduct(${p.id}, '${p.name}')" class="btn-delete-prod">❌ Delete Product</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addNewProduct(e) {
-            e.preventDefault();
-            const name = document.getElementById('p-name').value;
-            const price = parseInt(document.getElementById('p-price').value);
-            const category = document.getElementById('p-category').value;
-            const hasSize = document.getElementById('p-size-feature').value;
-            const desc = document.getElementById('p-desc').value;
-
-            const products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
-            products.push({ id: Date.now(), name, price, category, hasSize, desc });
-            localStorage.setItem('pakstore_products', JSON.stringify(products));
-
-            alert(`Product "${name}" listed successfully!`);
-            document.querySelector('form').reset();
-            renderAdminProducts();
-        }
-
-        function deleteProduct(prodId, prodName) {
-            if (confirm(`Delete "${prodName}"?`)) {
-                let products = JSON.parse(localStorage.getItem('pakstore_products')) || [];
-                products = products.filter(p => p.id !== prodId);
-                localStorage.setItem('pakstore_products', JSON.stringify(products));
-                renderAdminProducts();
-            }
-        }
-
-        function renderOrdersTable() {
-            const orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            const tbody = document.getElementById('admin-orders-table');
-            if (orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#aaa;">No orders yet.</td></tr>`;
-                return;
-            }
-            tbody.innerHTML = orders.map(o => {
-                const itemsStr = o.items.map(i => `${i.name} (x${i.qty})`).join(', ');
+            container.innerHTML = products.map(p => {
+                const firstImg = (p.images && p.images.length > 0) ? p.images[0] : '';
                 return `
-                    <tr>
-                        <td style="font-weight:bold; color:#2563eb;">${o.id}<br><span style="font-size:11px; color:#aaa;">${o.date}</span></td>
-                        <td><b>${o.name}</b><br>${o.phone}<br><span style="font-size:12px; color:#64748b;">${o.address}</span></td>
-                        <td><div style="font-size:12px; color:#334155;">${itemsStr}</div><b>${o.total}</b></td>
-                        <td>
-                            <select onchange="updateOrderStatus('${o.id}', this.value)" style="padding:4px; font-weight:bold;">
-                                <option value="Processing" ${o.status==='Processing'?'selected':''}>⏳ Processing</option>
-                                <option value="Shipped" ${o.status==='Shipped'?'selected':''}>🚚 Shipped</option>
-                                <option value="Delivered" ${o.status==='Delivered'?'selected':''}>✅ Delivered</option>
-                            </select>
-                        </td>
-                    </tr>
+                    <div class="inventory-item">
+                        <div class="item-info">
+                            <img src="${firstImg}" class="item-thumb" alt="Product Image">
+                            <div class="item-details">
+                                <h4>${p.name}</h4>
+                                <p>Rs. ${p.price} | ${p.category.toUpperCase()} (${p.images ? p.images.length : 0} Pics)</p>
+                            </div>
+                        </div>
+                        <button class="btn-delete" onclick="removeProductNode(${p.id})">Remove</button>
+                    </div>
                 `;
             }).join('');
         }
 
-        function updateOrderStatus(orderId, newStatus) {
-            let orders = JSON.parse(localStorage.getItem('pakstore_orders')) || [];
-            orders = orders.map(o => { if (o.id === orderId) o.status = newStatus; return o; });
-            localStorage.setItem('pakstore_orders', JSON.stringify(orders));
-            renderOrdersTable();
+        function processMultipleImages(event) {
+            const files = event.target.files;
+            const remainingSlots = 10 - uploadedImagesBase64.length;
+            
+            if (files.length > remainingSlots) {
+                alert(`Limit Extended! Aap maximum 10 images hi upload kar sakte hain. Abhi aap sirf ${remainingSlots} mazeed images select kar sakte hain.`);
+            }
+
+            // Slice out only till remaining index boundary
+            const validFilesArray = Array.from(files).slice(0, remainingSlots);
+
+            validFilesArray.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImagesBase64.push(e.target.result);
+                    renderThumbnailsLayout();
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Input reset so same file can be clicked again safely
+            event.target.value = "";
         }
 
-        function clearAllOrders() {
-            if (confirm('Clean out entire database?')) {
-                localStorage.removeItem('pakstore_orders');
-                renderOrdersTable();
+        function renderThumbnailsLayout() {
+            const container = document.getElementById('image-previews-container');
+            container.innerHTML = uploadedImagesBase64.map((imgSrc, targetIdx) => `
+                <div class="preview-wrapper">
+                    <img src="${imgSrc}">
+                    <button type="button" class="remove-img-btn" onclick="deleteSelectedImageTrack(${targetIdx})">×</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteSelectedImageTrack(index) {
+            uploadedImagesBase64.splice(index, 1);
+            renderThumbnailsLayout();
+        }
+
+        function handleFormSubmission(e) {
+            e.preventDefault();
+
+            if(uploadedImagesBase64.length === 0) {
+                alert("Meherbani karke product ki kam az kam ek image zaroor upload karein!");
+                return;
+            }
+
+            const currentInventory = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+            const structuredProductObject = {
+                id: Date.now(), // Generate unique safe dynamic timeline token
+                name: document.getElementById('prod-name').value.trim(),
+                category: document.getElementById('prod-category').value,
+                price: parseInt(document.getElementById('prod-price').value),
+                hasSize: document.getElementById('prod-size-needed').value,
+                desc: document.getElementById('prod-desc').value.trim(),
+                images: [...uploadedImagesBase64] // Destructure complete multi array map directly safely
+            };
+
+            currentInventory.push(structuredProductObject);
+            localStorage.setItem('pakstore_products', JSON.stringify(currentInventory));
+            
+            // Clean dynamic parameters state
+            document.getElementById('product-addition-form').reset();
+            uploadedImagesBase64 = [];
+            renderThumbnailsLayout();
+            renderActiveInventory();
+            
+            alert("🎉 Product successfully update aur main portal par push kar diya gaya hai!");
+        }
+
+        function removeProductNode(productId) {
+            if(confirm("Kya aap waqai is product ko store se delete karna chahte hain?")) {
+                let currentInventory = JSON.parse(localStorage.getItem('pakstore_products')) || [];
+                currentInventory = currentInventory.filter(p => p.id !== productId);
+                localStorage.setItem('pakstore_products', JSON.stringify(currentInventory));
+                renderActiveInventory();
             }
         }
+
+        // Initialize view on baseline setup execution runtime
+        window.onload = renderActiveInventory;
     </script>
 </body>
 </html>
