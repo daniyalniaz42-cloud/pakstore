@@ -77,7 +77,6 @@
             object-fit: contain;
         }
 
-        /* Logo Upload Overlay */
         .logo-overlay {
             position: absolute;
             top: 0;
@@ -151,7 +150,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Hidden File Input */
         #logoUpload {
             display: none;
         }
@@ -664,25 +662,21 @@
     </style>
 </head>
 <body>
-    <div class="document">
+    <div class="document" id="billDocument">
         <!-- ===== HEADER ===== -->
         <div class="header">
-            <!-- Clickable Logo Box -->
             <div class="logo-box" id="logoBox" onclick="document.getElementById('logoUpload').click()" title="Click to change logo">
                 <div class="logo-icon" id="logoIcon">
-                    <!-- Default SVG Logo -->
                     <svg id="defaultLogo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" fill="#1a3a6b" stroke="#1a3a6b" stroke-width="2"/>
                         <polygon points="50,15 85,32.5 85,67.5 50,85 15,67.5 15,32.5" fill="none" stroke="#f4b942" stroke-width="1.5"/>
                         <polygon points="50,25 75,37.5 75,62.5 50,75 25,62.5 25,37.5" fill="#1a3a6b" stroke="#f4b942" stroke-width="1"/>
                         <path d="M 55 20 L 40 50 L 52 50 L 45 80 L 65 45 L 52 45 Z" fill="#f4b942"/>
                     </svg>
-                    <!-- Custom Logo (hidden by default) -->
                     <img id="customLogo" src="" alt="Logo" style="display: none;">
                 </div>
-                <!-- Hover Overlay -->
                 <div class="logo-overlay">
-                    <span></span>
+                    <span>📷</span>
                     <div>Click to<br>Change Logo</div>
                 </div>
                 <div class="logo-text">
@@ -691,7 +685,6 @@
                     <div class="tagline">SAFE • RELIABLE • PROFESSIONAL</div>
                 </div>
             </div>
-            <!-- Hidden File Input -->
             <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)">
 
             <div class="header-title">
@@ -771,7 +764,7 @@
 
             <!-- SECTION 2: Fixed Rate Items -->
             <div class="section-header">
-                <div class="icon-circle">🔧</div>
+                <div class="icon-circle"></div>
                 <h3>Fixed Rate Items</h3>
             </div>
 
@@ -848,9 +841,9 @@
         <button class="btn btn-add" onclick="addCoveredRow()">+ Area Row</button>
         <button class="btn btn-add" onclick="addFixedRow()" style="background:#1a3a6b;">+ Fixed Row</button>
         <button class="btn btn-logo" onclick="document.getElementById('logoUpload').click()">📷 Change Logo</button>
-        <button class="btn btn-clear" onclick="resetLogo()"> Reset Logo</button>
+        <button class="btn btn-clear" onclick="resetLogo()">↺ Reset Logo</button>
         <button class="btn btn-clear" onclick="clearAll()">Clear</button>
-        <button class="btn btn-save" onclick="saveBill()">💾 Save</button>
+        <button class="btn btn-save" onclick="saveAsLetterhead()">💾 Save Invoice</button>
         <button class="btn btn-print" onclick="printBill()">🖨️ Print</button>
     </div>
 
@@ -858,18 +851,16 @@
         let coveredRowCount = 1;
         let fixedRowCount = 0;
 
-        // ===== LOGO UPLOAD FUNCTIONALITY =====
+        // ===== LOGO FUNCTIONS =====
         function handleLogoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 alert('Please select a valid image file (PNG, JPG, SVG, etc.)');
                 return;
             }
 
-            // Validate file size (max 2MB)
             if (file.size > 2 * 1024 * 1024) {
                 alert('Image size should be less than 2MB');
                 return;
@@ -878,24 +869,18 @@
             const reader = new FileReader();
             reader.onload = function(e) {
                 const imgData = e.target.result;
-                
-                // Display custom logo
                 document.getElementById('customLogo').src = imgData;
                 document.getElementById('customLogo').style.display = 'block';
                 document.getElementById('defaultLogo').style.display = 'none';
-                
-                // Save to localStorage
                 try {
                     localStorage.setItem('dnhq_custom_logo', imgData);
-                    console.log('Logo saved successfully');
                 } catch (err) {
-                    console.warn('Could not save logo to localStorage:', err);
+                    console.warn('Could not save logo:', err);
                 }
             };
             reader.readAsDataURL(file);
         }
 
-        // Load saved logo on page load
         function loadSavedLogo() {
             const savedLogo = localStorage.getItem('dnhq_custom_logo');
             if (savedLogo) {
@@ -905,7 +890,6 @@
             }
         }
 
-        // Reset to default logo
         function resetLogo() {
             if (confirm('Reset to default logo?')) {
                 document.getElementById('customLogo').src = '';
@@ -1042,76 +1026,283 @@
             }
         }
 
-        function saveBill() {
-            const billData = {
-                invoiceNo: document.getElementById('invoiceNo').value,
-                date: document.getElementById('invoiceDate').value,
-                billTo: document.getElementById('billTo').value,
-                billFor: document.getElementById('billFor').value,
-                subject: document.getElementById('subject').value,
-                received: document.getElementById('receivedAmount').value,
-                balance: document.getElementById('balanceAmount').innerText,
-                grandTotal: document.getElementById('grandTotal').innerText
-            };
+        // ===== SAVE AS LETTERHEAD HTML INVOICE =====
+        function saveAsLetterhead() {
+            const invoiceNo = document.getElementById('invoiceNo').value || '0000';
+            const invoiceDate = document.getElementById('invoiceDate').value;
+            const billTo = document.getElementById('billTo').value;
+            const billFor = document.getElementById('billFor').value;
+            const subject = document.getElementById('subject').value;
+            const received = document.getElementById('receivedAmount').value;
+            const balance = document.getElementById('balanceAmount').innerText;
+            const grandTotal = document.getElementById('grandTotal').innerText;
+            const coveredSubtotal = document.getElementById('coveredSubtotal').textContent;
+            const fixedSubtotal = document.getElementById('fixedSubtotal').textContent;
+            const notes = document.getElementById('notesText').value;
 
-            let receipt = '='.repeat(55) + '\n';
-            receipt += '           DNHQ SERVICES\n';
-            receipt += '   Professional Electrical & AC Maintenance\n';
-            receipt += '='.repeat(55) + '\n';
-            receipt += `KC No / Invoice No: ${billData.invoiceNo}\n`;
-            receipt += `Date: ${billData.date}\n`;
-            receipt += `Bill To: ${billData.billTo}\n`;
-            receipt += `Bill for: ${billData.billFor}\n`;
-            receipt += `Subject: ${billData.subject}\n`;
-            receipt += '-'.repeat(55) + '\n\n';
-            
-            receipt += 'COVERED AREA BASED WORK\n';
-            receipt += '-'.repeat(55) + '\n';
-            receipt += 'S.no  Description                    Area    Rate   Qty%    Amount\n';
+            // Get logo
+            const customLogoSrc = document.getElementById('customLogo').src;
+            const hasCustomLogo = document.getElementById('customLogo').style.display !== 'none' && customLogoSrc;
+            const logoHTML = hasCustomLogo 
+                ? `<img src="${customLogoSrc}" alt="Logo" style="width:100%; height:100%; object-fit:contain;">`
+                : `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <polygon points="50,5 95,27.5 95,72.5 50,95 5,72.5 5,27.5" fill="#1a3a6b" stroke="#1a3a6b" stroke-width="2"/>
+                        <polygon points="50,15 85,32.5 85,67.5 50,85 15,67.5 15,32.5" fill="none" stroke="#f4b942" stroke-width="1.5"/>
+                        <polygon points="50,25 75,37.5 75,62.5 50,75 25,62.5 25,37.5" fill="#1a3a6b" stroke="#f4b942" stroke-width="1"/>
+                        <path d="M 55 20 L 40 50 L 52 50 L 45 80 L 65 45 L 52 45 Z" fill="#f4b942"/>
+                   </svg>`;
+
+            // Get covered area rows
+            let coveredRowsHTML = '';
             document.querySelectorAll('#coveredAreaBody tr').forEach((row, idx) => {
-                const desc = row.querySelector('.desc-input').value.padEnd(30);
-                const area = row.querySelector('.area-input').value.padStart(6);
-                const rate = row.querySelector('.rate-input').value.padStart(6);
-                const qty = row.querySelector('.qty-input').value.padStart(6);
-                const amount = row.querySelector('.amount-input').value.padStart(10);
-                receipt += `${String(idx+1).padStart(2,'0')}    ${desc} ${area} ${rate} ${qty}  ${amount}\n`;
+                const desc = row.querySelector('.desc-input').value;
+                const area = row.querySelector('.area-input').value;
+                const rate = row.querySelector('.rate-input').value;
+                const qty = row.querySelector('.qty-input').value;
+                const amount = row.querySelector('.amount-input').value;
+                coveredRowsHTML += `
+                    <tr>
+                        <td style="text-align:center;">${String(idx+1).padStart(2,'0')}</td>
+                        <td style="text-align:left; padding-left:15px;">${desc}</td>
+                        <td style="text-align:center;">${area}</td>
+                        <td style="text-align:center;">${rate}</td>
+                        <td style="text-align:center;">${qty}</td>
+                        <td style="text-align:right; padding-right:15px; font-weight:700;">${amount}</td>
+                    </tr>`;
             });
-            receipt += `Covered Subtotal: ${document.getElementById('coveredSubtotal').textContent}\n\n`;
-            
-            receipt += 'FIXED RATE ITEMS\n';
-            receipt += '-'.repeat(55) + '\n';
-            receipt += 'S.no  Description                    Qty     Rate\n';
+
+            // Get fixed rate rows
+            let fixedRowsHTML = '';
             document.querySelectorAll('#fixedRateBody tr').forEach((row, idx) => {
-                const desc = row.querySelector('.fixed-desc-input').value.padEnd(30);
-                const qty = row.querySelector('.fixed-qty-input').value.padStart(6);
-                const rate = row.querySelector('.fixed-rate-input').value.padStart(8);
-                receipt += `${String(idx+1).padStart(2,'0')}    ${desc} ${qty} ${rate}\n`;
+                const desc = row.querySelector('.fixed-desc-input').value;
+                const qty = row.querySelector('.fixed-qty-input').value;
+                const rate = row.querySelector('.fixed-rate-input').value;
+                fixedRowsHTML += `
+                    <tr>
+                        <td style="text-align:center;">${String(idx+1).padStart(2,'0')}</td>
+                        <td style="text-align:left; padding-left:15px;">${desc}</td>
+                        <td style="text-align:center;">${qty}</td>
+                        <td style="text-align:center;">${rate}</td>
+                    </tr>`;
             });
-            receipt += `Fixed Subtotal: ${document.getElementById('fixedSubtotal').textContent}\n\n`;
-            
-            receipt += '='.repeat(55) + '\n';
-            receipt += `GRAND TOTAL: ${billData.grandTotal}\n`;
-            receipt += `Received: Rs. ${billData.received}\n`;
-            receipt += `Balance: Rs. ${billData.balance}\n`;
-            receipt += '='.repeat(55) + '\n';
-            receipt += '\nNote: ' + document.getElementById('notesText').value + '\n';
-            receipt += '='.repeat(55) + '\n';
-            receipt += 'Contact: +92 315 2458657 | +92 312 8542993\n';
-            receipt += 'Website: dnhq-services.online\n';
 
-            let bills = JSON.parse(localStorage.getItem('dnhq_bills') || '[]');
-            bills.push({ ...billData, savedAt: new Date().toISOString() });
-            localStorage.setItem('dnhq_bills', JSON.stringify(bills));
+            // Complete HTML invoice
+            const invoiceHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNHQ Bill - ${invoiceNo}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: #e8e8e8; padding: 20px; color: #1a1a2e; }
+        .document { max-width: 900px; margin: 0 auto; background: white; box-shadow: 0 5px 30px rgba(0,0,0,0.15); }
+        .header { background: #000; padding: 25px 40px; display: flex; align-items: center; gap: 25px; }
+        .logo-box { background: white; padding: 12px 18px; border-radius: 4px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .logo-icon { width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .logo-icon svg, .logo-icon img { width: 100%; height: 100%; }
+        .logo-text { display: flex; flex-direction: column; }
+        .logo-text .brand { font-size: 22px; font-weight: 900; color: #1a3a6b; line-height: 1; letter-spacing: 1px; }
+        .logo-text .sub { font-size: 11px; font-weight: 700; color: #1a3a6b; letter-spacing: 0.5px; }
+        .logo-text .tagline { font-size: 7px; color: #666; letter-spacing: 1px; margin-top: 2px; }
+        .header-title { flex: 1; }
+        .header-title h1 { color: #f4b942; font-size: 38px; font-weight: 900; letter-spacing: 2px; line-height: 1; }
+        .header-title p { color: #ccc; font-size: 15px; margin-top: 8px; letter-spacing: 0.5px; }
+        .content { padding: 35px 40px; }
+        .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .info-row label { font-weight: 700; font-size: 15px; min-width: 180px; }
+        .info-row .value { font-size: 14px; border-bottom: 1px solid #333; padding: 6px 10px; flex: 1; max-width: 400px; }
+        .bill-title { text-align: center; font-size: 32px; font-weight: 900; margin: 25px 0; padding-bottom: 12px; border-bottom: 3px solid #1a1a2e; letter-spacing: 3px; }
+        .bill-sections { margin-bottom: 25px; }
+        .bill-section { margin-bottom: 15px; }
+        .bill-section label { font-weight: 700; font-size: 14px; display: block; margin-bottom: 5px; }
+        .bill-section .value { font-size: 14px; border-bottom: 1px solid #333; padding: 6px 10px; max-width: 500px; display: inline-block; min-width: 300px; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin: 25px 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f4b942; }
+        .icon-circle { width: 36px; height: 36px; background: #f4b942; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; flex-shrink: 0; }
+        .section-header h3 { font-size: 20px; font-weight: 800; color: #1a1a2e; }
+        .section-header .rate-badge { margin-left: auto; background: #1a1a2e; color: #f4b942; padding: 6px 14px; border-radius: 4px; font-weight: 700; font-size: 14px; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1px solid #ddd; }
+        .items-table thead { background: #1a1a2e; color: white; }
+        .items-table th { padding: 12px 10px; text-align: center; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; }
+        .items-table th.left { text-align: left; padding-left: 15px; }
+        .items-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: center; vertical-align: middle; }
+        .items-table td.left { text-align: left; padding-left: 15px; }
+        .items-table td.right { text-align: right; padding-right: 15px; font-weight: 600; }
+        .items-table tfoot { background: #fff9e6; }
+        .items-table tfoot td { padding: 12px 10px; font-weight: 800; font-size: 15px; border-top: 2px solid #1a1a2e; }
+        .total-label { text-align: right; padding-right: 15px; }
+        .total-value { color: #1a1a2e; font-size: 16px; font-weight: 900; text-align: right; padding-right: 15px; }
+        .grand-total-section { background: #1a1a2e; color: white; padding: 20px; border-radius: 6px; margin: 25px 0; display: flex; justify-content: space-between; align-items: center; }
+        .grand-total-section .label { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+        .grand-total-section .amount { font-size: 28px; font-weight: 900; color: #f4b942; }
+        .payment-section { display: flex; justify-content: flex-end; gap: 30px; margin: 20px 0; padding: 15px; background: #f5f7fa; border-radius: 6px; }
+        .payment-field { display: flex; align-items: center; gap: 10px; }
+        .payment-field label { font-weight: 700; font-size: 15px; }
+        .balance-display { font-weight: 900; font-size: 18px; color: #1a1a2e; }
+        .notes-section { margin: 30px 0; }
+        .notes-section h4 { font-weight: 800; font-size: 16px; margin-bottom: 10px; }
+        .notes-section p { font-size: 14px; line-height: 1.6; color: #444; }
+        .signature-section { margin-top: 50px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .signature-left p { margin-bottom: 5px; font-size: 14px; }
+        .signature-line { border-top: 2px solid #1a1a2e; margin-top: 50px; padding-top: 8px; max-width: 250px; }
+        .signature-line strong { display: block; font-size: 15px; }
+        .signature-right { display: flex; align-items: center; gap: 10px; }
+        .signature-right label { font-weight: 800; font-size: 18px; }
+        .sign-line { width: 200px; border-bottom: 2px solid #1a1a2e; height: 30px; }
+        .footer { border-top: 2px solid #ddd; padding: 20px 40px; text-align: center; background: white; }
+        .footer p { font-size: 13px; color: #555; margin: 4px 0; }
+        .footer .contact-label { color: #333; font-weight: 600; }
+        .print-btn { position: fixed; bottom: 25px; right: 25px; padding: 14px 28px; background: #1a3a6b; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
+        .print-btn:hover { background: #0f2a52; transform: translateY(-2px); }
+        @media print {
+            body { background: white; padding: 0; }
+            .document { box-shadow: none; max-width: 100%; }
+            .print-btn { display: none !important; }
+            .header, .items-table thead, .icon-circle, .grand-total-section, .section-header .rate-badge {
+                -webkit-print-color-adjust: exact; print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">️ Print / Save as PDF</button>
+    <div class="document">
+        <div class="header">
+            <div class="logo-box">
+                <div class="logo-icon">${logoHTML}</div>
+                <div class="logo-text">
+                    <div class="brand">DNHQ</div>
+                    <div class="sub">SERVICES</div>
+                    <div class="tagline">SAFE • RELIABLE • PROFESSIONAL</div>
+                </div>
+            </div>
+            <div class="header-title">
+                <h1>DNHQ SERVICES</h1>
+                <p>Professional Electrical & AC Maintenance</p>
+            </div>
+        </div>
+        <div class="content">
+            <div class="invoice-info">
+                <div class="info-row">
+                    <label>KC No / Invoice No:</label>
+                    <div class="value">${invoiceNo}</div>
+                </div>
+                <div class="info-row">
+                    <label>Date:</label>
+                    <div class="value">${invoiceDate}</div>
+                </div>
+            </div>
+            <div class="bill-title">BILL</div>
+            <div class="bill-sections">
+                <div class="bill-section">
+                    <label>Bill To:</label>
+                    <div class="value">${billTo}</div>
+                </div>
+                <div class="bill-section">
+                    <label>Bill for:</label>
+                    <div class="value">${billFor}</div>
+                </div>
+                <div class="bill-section">
+                    <label>Subject:</label>
+                    <div class="value">${subject}</div>
+                </div>
+            </div>
+            <div class="section-header">
+                <div class="icon-circle">📐</div>
+                <h3>Covered Area Based Work</h3>
+                <div class="rate-badge">Rate: ${document.getElementById('coveredAreaRate').value}/- per sq.ft</div>
+            </div>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S.no</th>
+                        <th class="left">Description</th>
+                        <th style="width: 110px;">C/ Area</th>
+                        <th style="width: 80px;">Rate</th>
+                        <th style="width: 80px;">Qty (%)</th>
+                        <th style="width: 120px;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>${coveredRowsHTML}</tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="total-label">Covered Area Subtotal:</td>
+                        <td class="total-value">${coveredSubtotal}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="section-header">
+                <div class="icon-circle">🔧</div>
+                <h3>Fixed Rate Items</h3>
+            </div>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">S.no</th>
+                        <th class="left">Description</th>
+                        <th style="width: 100px;">Qty</th>
+                        <th style="width: 120px;">Rate</th>
+                    </tr>
+                </thead>
+                <tbody>${fixedRowsHTML || '<tr><td colspan="4" style="text-align:center; color:#999; padding:20px;">No fixed rate items added</td></tr>'}</tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="total-label">Fixed Rate Subtotal:</td>
+                        <td class="total-value">${fixedSubtotal}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="grand-total-section">
+                <div class="label">GRAND TOTAL</div>
+                <div class="amount">${grandTotal}</div>
+            </div>
+            <div class="payment-section">
+                <div class="payment-field">
+                    <label>Received:</label>
+                    <label style="font-weight:700; font-size:15px;">Rs. ${received}</label>
+                </div>
+                <div class="payment-field">
+                    <label class="balance-display">Balance: Rs. ${balance}</label>
+                </div>
+            </div>
+            <div class="notes-section">
+                <h4>Message / Notes:</h4>
+                <p>${notes}</p>
+            </div>
+            <div class="signature-section">
+                <div class="signature-left">
+                    <p>Thank you</p>
+                    <p>Regards</p>
+                    <div class="signature-line">
+                        <strong>DNHQ Owner</strong>
+                        <strong>DNHQ Services</strong>
+                    </div>
+                </div>
+                <div class="signature-right">
+                    <label>Sign:</label>
+                    <div class="sign-line"></div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <p><span class="contact-label">Contact:</span> +92 315 2458657</p>
+            <p><span class="contact-label">Contact:</span> +92 312 8542993</p>
+            <p><span class="contact-label">Website:</span> dnhq-services.online</p>
+        </div>
+    </div>
+</body>
+</html>`;
 
-            const blob = new Blob([receipt], { type: 'text/plain' });
+            // Download as HTML file
+            const blob = new Blob([invoiceHTML], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `DNHQ_Bill_${billData.invoiceNo}.txt`;
+            a.download = `DNHQ_Bill_${invoiceNo}.html`;
             a.click();
             URL.revokeObjectURL(url);
 
-            alert('Bill saved successfully!\nInvoice No: ' + billData.invoiceNo);
+            alert('✅ Invoice saved as letterhead!\n\n📄 File: DNHQ_Bill_' + invoiceNo + '.html\n\n👉 File ko browser mein open karein\n "Print / Save as PDF" button dabayein\n👉 PDF save karein ya print karein');
         }
 
         function printBill() {
